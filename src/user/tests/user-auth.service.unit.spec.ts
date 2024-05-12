@@ -19,6 +19,7 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
+
     const msg1 = 'Message to sign';
     const pk1 = '8SuB8Wkoj4nc9d5GbEp6gfbmSdsmNzaTeUQTz1FVFgsz';
     const sig2 =
@@ -31,6 +32,7 @@ describe('AppController (e2e)', () => {
     );
 
     console.log(verified1);
+
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
