@@ -5,10 +5,10 @@ import * as request from 'supertest';
 import * as base58 from 'bs58';
 import { AppModule } from '../../app.module';
 import * as nacl from 'tweetnacl';
-import { GetSignInRequestService } from '../slice/auth/get.sign-in-request.service';
+import { GetSignInRequestService } from '../slice/auth/get/get.sign-in-request.service';
 import { Types } from 'mongoose';
 import { ObjectId } from 'mongodb';
-import { GetSignInRequestRepo } from '../slice/auth/get.sign-in-request.repo';
+import { GetSignInRequestRepo } from '../slice/auth/get/get.sign-in-request.repo';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   SignInRequest,

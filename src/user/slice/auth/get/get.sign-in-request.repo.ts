@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   SignInRequest,
   SignInRequestDocument,
-} from '../../common/domain/entity/sign-in-request.entity';
+} from '../../../common/domain/entity/sign-in-request.entity';
 import { Model } from 'mongoose';
 @Injectable()
 export class GetSignInRequestRepo {

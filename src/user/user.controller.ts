@@ -1,4 +1,4 @@
-import { UserAuthService } from './slice/auth/user-auth.service';
+import { ManageUserAuthService } from './slice/auth/manage/manage.user-auth.service';
 import {
   BadRequestException,
   Body,
@@ -12,7 +12,7 @@ import { VerifySignInAuthRequestDto } from './common/domain/dto/verify-sign-in-a
 @Controller('user')
 export class UserController {
   private logger: Logger = new Logger(UserController.name);
-  constructor(private userAuthService: UserAuthService) {}
+  constructor(private userAuthService: ManageUserAuthService) {}
 
   @Get('auth')
   async createAuthRequest() {

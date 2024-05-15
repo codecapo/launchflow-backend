@@ -3,21 +3,21 @@ import * as base58 from 'bs58';
 import * as nacl from 'tweetnacl';
 import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { CreateUserService } from '../manage/create/create.user.service';
-import { GetUsersService } from '../manage/get/get.user.service';
-import { VerifySignInAuthResponseDto } from '../../common/domain/dto/verify-sign-in-auth-response.dto';
+import { CreateUserService } from '../../manage/create/create.user.service';
+import { GetUsersService } from '../../manage/get/get.user.service';
+import { VerifySignInAuthResponseDto } from '../../../common/domain/dto/verify-sign-in-auth-response.dto';
 import { JwtService } from '@nestjs/jwt';
-import { ValidateAccessTokenService } from './validate.access-token.service';
+import { ValidateAccessTokenService } from '../validate/validate.access-token.service';
 import { EncryptionService } from '@app/encryption';
-import { SaveAccessTokenService } from './save.access-token.service';
-import { SaveSignInRequestService } from './save.sign-in-request.service';
-import { SaveSignInRequestDto } from '../../common/domain/dto/save-sign-in-request.dto';
-import { GetSignInRequestService } from './get.sign-in-request.service';
-import { RevokeAccessTokenService } from './revoke.access-token.service';
+import { SaveAccessTokenService } from '../save/save.access-token.service';
+import { SaveSignInRequestService } from '../save/save.sign-in-request.service';
+import { SaveSignInRequestDto } from '../../../common/domain/dto/save-sign-in-request.dto';
+import { GetSignInRequestService } from '../get/get.sign-in-request.service';
+import { RevokeAccessTokenService } from '../revoke/revoke.access-token.service';
 
 @Injectable()
-export class UserAuthService {
-  private logger: Logger = new Logger(UserAuthService.name);
+export class ManageUserAuthService {
+  private logger: Logger = new Logger(ManageUserAuthService.name);
 
   constructor(
     private readonly createUserService: CreateUserService,
@@ -43,8 +43,7 @@ export class UserAuthService {
 
     const signInData: SolanaSignInInput = {
       domain,
-      statement:
-        'Solana Stack wants to sign you in using your wallet',
+      statement: 'Solana Stack wants to sign you in using your wallet',
       version: '1',
       nonce: nounce,
       chainId: 'devnet',
@@ -123,6 +122,7 @@ export class UserAuthService {
         await this.getUserOrCreateIfUserNotExist(walletAddress);
 
       if (findCreateUser) {
+
         const token =
           await this.validateAccessTokenService.isAccessTokenExpired(
             walletAddress,
@@ -131,10 +131,13 @@ export class UserAuthService {
         if (token.isExpired) {
           const newAccessToken = await this.jwtService.signAsync(
             { pk: walletAddress },
-            { expiresIn: '8h', secret: process.env.JWT_KEY },
+            {
+              expiresIn: process.env.JWT_EXPIRES_IN,
+              secret: process.env.JWT_KEY,
+            },
           );
 
-          await this.saveAccessTokenService.saveAccessToken(
+          await this.saveAccessTokenService.updateAccessToken(
             walletAddress,
             newAccessToken,
           );
@@ -160,7 +163,10 @@ export class UserAuthService {
 
             const revokeAndIssueAccessToken = await this.jwtService.signAsync(
               { pk: walletAddress },
-              { expiresIn: '8h', secret: process.env.JWT_KEY },
+              {
+                expiresIn: process.env.JWT_EXPIRES_IN,
+                secret: process.env.JWT_KEY,
+              },
             );
 
             await this.saveAccessTokenService.saveAccessToken(

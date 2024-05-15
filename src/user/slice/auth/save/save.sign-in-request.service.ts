@@ -1,5 +1,5 @@
 import { SaveSignInRequestRepo } from './save-sign-in-request.repo';
-import { SaveSignInRequestDto } from '../../common/domain/dto/save-sign-in-request.dto';
+import { SaveSignInRequestDto } from '../../../common/domain/dto/save-sign-in-request.dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
