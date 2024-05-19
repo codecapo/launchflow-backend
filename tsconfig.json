@@ -16,6 +16,14 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@app/encryption": [
+        "libs/encryption/src"
+      ],
+      "@app/encryption/*": [
+        "libs/encryption/src/*"
+      ]
+    }
   }
 }

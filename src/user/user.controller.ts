@@ -1,35 +1,40 @@
-import { UserAuthService } from './slice/auth/service/user-auth.service';
+import { ManageUserAuthService } from './slice/auth/manage/manage.user-auth.service';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Logger,
   Post,
 } from '@nestjs/common';
-interface VerifyAuthRequest {
-  publicKey: any;
-  signature: any;
-  message: any;
-}
+import { VerifySignInAuthRequestDto } from './common/domain/dto/verify-sign-in-auth-request.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private userAuthSiwsService: UserAuthService) {}
+  private logger: Logger = new Logger(UserController.name);
+  constructor(private userAuthService: ManageUserAuthService) {}
 
-  @Get('sign-in')
-  async createSignInRequest() {
-    console.log('sign-in');
-
-    return this.userAuthSiwsService.userSignIn();
+  @Get('auth')
+  async createAuthRequest() {
+    return this.userAuthService.userSignIn();
   }
 
-  @Post('auth')
-  async walletAuthRequest(@Body() verifyAuthRequest: VerifyAuthRequest) {
-    console.log(verifyAuthRequest);
+  @Post('sign-in')
+  async signInRequest(
+    @Body() verifySignInAuthRequest: VerifySignInAuthRequestDto,
+  ) {
+    if (!verifySignInAuthRequest)
+      throw new BadRequestException('Please ensure all fields are provided');
 
-    return this.userAuthSiwsService.verifySignIn(
-      verifyAuthRequest.message,
-      verifyAuthRequest.signature,
-      verifyAuthRequest.publicKey,
+    const verified = await this.userAuthService.verifyWalletSignIn(
+      verifySignInAuthRequest.message,
+      verifySignInAuthRequest.signature,
+      verifySignInAuthRequest.publicKey,
+    );
+
+    return await this.userAuthService.manageJwt(
+      verified,
+      verifySignInAuthRequest.publicKey,
     );
   }
 }

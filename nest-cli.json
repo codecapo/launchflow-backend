@@ -3,6 +3,18 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true
+  },
+  "projects": {
+    "encryption": {
+      "type": "library",
+      "root": "libs/encryption",
+      "entryFile": "index",
+      "sourceRoot": "libs/encryption/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/encryption/tsconfig.lib.json"
+      }
+    }
   }
 }
