@@ -14,7 +14,6 @@ import {
 // add kms service for encryption and key management
 @Injectable()
 export class EncryptionService {
-
   private static kmsClient() {
     return new KMSClient({
       region: `${process.env.AWS_REGION_NAME}`,
@@ -70,7 +69,6 @@ export class EncryptionService {
   }
 
   async kmsDecryptAndVerify(payload: string) {
-
     const buffer = Buffer.from(payload, 'base64');
 
     const decryptInput: DecryptCommandInput = {
@@ -81,7 +79,10 @@ export class EncryptionService {
 
     const decryptCommand = new DecryptCommand(decryptInput);
 
-    return await EncryptionService.kmsClient().send(decryptCommand);
+    const decryptOutputRespose =
+      await EncryptionService.kmsClient().send(decryptCommand);
+
+    return Buffer.from(decryptOutputRespose.Plaintext).toString('utf8');
   }
 
   async listKeys() {

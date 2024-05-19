@@ -37,6 +37,7 @@
     "@solana/wallet-standard-features": "1.1.0",
     "@solana/wallet-standard-util": "1.1.0",
     "@solana/web3.js": "^1.91.8",
+    "automock": "^0.0.2",
     "bcrypt": "^5.1.1",
     "bs58": "^5.0.0",
     "class-transformer": "^0.5.1",

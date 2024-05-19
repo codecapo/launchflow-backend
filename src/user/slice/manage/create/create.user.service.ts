@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class CreateUserService {
   constructor(private readonly createUseRepo: CreateUserRepo) {}
-  async createUser(address: string) {
+  async createUser(address: string): Promise<User> {
     if (!address) throw Error('Please provide address');
 
     const user: User = {

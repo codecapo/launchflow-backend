@@ -41,26 +41,6 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    const msg1 = 'Message to sign';
-    const pk1 = '8SuB8Wkoj4nc9d5GbEp6gfbmSdsmNzaTeUQTz1FVFgsz';
-    const sig2 =
-      '4NobMMQgtw3Jo9MZQD1mqk4qJC6iGYgLbvc92EyQqnxUk8ENtLmSqE2cZTcjrzUAhiGTq3jJAGPVxhMEj8La8kUG';
-
-    const verified1 = nacl.sign.detached.verify(
-      new TextEncoder().encode(msg1),
-      base58.decode(sig2),
-      base58.decode(pk1),
-    );
-
-    console.log(verified1);
-
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
-
   it('should get sign in request', async () => {
     const nounce =
       'MWVhYjlmMTRjZWY5YTY1NmMzZmNkNjNkYjZmNjJiZTA4ZjBjYzUwZDAwNWU2ZmUzZGFkMWIwY2UyOTkzYjJhMWU5MDNlOTcxNDhkZmM3ZTY3NTUwZTVjYTZhNjliOGNk';

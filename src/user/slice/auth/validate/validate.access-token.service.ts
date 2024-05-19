@@ -21,12 +21,15 @@ export class ValidateAccessTokenService {
 
     try {
       if (get.accessToken) {
+
+
         const token = await this.jwtService.verifyAsync(get.accessToken, {
           secret: process.env.JWT_KEY,
         });
 
         const currentTime = new Date(Date.now()).getTime();
-        const expireTime = currentTime + 1000 * 60 * 60 * 8; // 8 hour;
+
+        const expireTime = currentTime + 1000 * 60 * 60 * 24;
 
         const valid = token.exp < Date.now() / expireTime;
 
@@ -36,7 +39,6 @@ export class ValidateAccessTokenService {
       new Error('JWT Expired');
 
       return { accessToken: null, isExpired: true };
-
     }
   }
 }

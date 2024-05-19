@@ -87,9 +87,7 @@ export class ManageUserAuthService {
       getSignInRequest.nounce,
     );
 
-    const isMatch =
-      Buffer.from(decryptedPayloadNounce.Plaintext).toString('utf8') ===
-      Buffer.from(decryptedDbNounce.Plaintext).toString('utf8');
+    const isMatch = decryptedPayloadNounce === decryptedDbNounce;
 
     const verified =
       isMatch && nacl.sign.detached.verify(message, signature, publicKey);
@@ -122,7 +120,6 @@ export class ManageUserAuthService {
         await this.getUserOrCreateIfUserNotExist(walletAddress);
 
       if (findCreateUser) {
-
         const token =
           await this.validateAccessTokenService.isAccessTokenExpired(
             walletAddress,
