@@ -72,6 +72,6 @@ import { RevokeAccessTokenRepo } from "./slice/auth/revoke/revoke.access-token.r
     RevokeAccessTokenRepo,
   ],
   controllers: [UserController],
-  exports: [JwtModule],
+  exports: [JwtModule,ManageUserAuthService],
 })
 export class UserModule {}
