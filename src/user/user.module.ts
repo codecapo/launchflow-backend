@@ -13,22 +13,19 @@ import { GetAccessTokenRepo } from './slice/auth/get/get.access-token.repo';
 import { SaveAccessTokenRepo } from './slice/auth/save/save.access-token.repo';
 import { SaveAccessTokenService } from './slice/auth/save/save.access-token.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './common/domain/entity/user.entity';
-import {
-  AccessToken,
-  AccessTokenSchema,
-} from './common/domain/entity/access-token.entity';
+
+
 import { PassportModule } from '@nestjs/passport';
 import { SaveSignInRequestRepo } from './slice/auth/save/save-sign-in-request.repo';
-import {
-  SignInRequest,
-  SignInRequestSchema,
-} from './common/domain/entity/sign-in-request.entity';
-import { GetSignInRequestService } from "./slice/auth/get/get.sign-in-request.service";
-import { SaveSignInRequestService } from "./slice/auth/save/save.sign-in-request.service";
-import { GetSignInRequestRepo } from "./slice/auth/get/get.sign-in-request.repo";
-import { RevokeAccessTokenService } from "./slice/auth/revoke/revoke.access-token.service";
-import { RevokeAccessTokenRepo } from "./slice/auth/revoke/revoke.access-token.repo";
+
+import { GetSignInRequestService } from './slice/auth/get/get.sign-in-request.service';
+import { SaveSignInRequestService } from './slice/auth/save/save.sign-in-request.service';
+import { GetSignInRequestRepo } from './slice/auth/get/get.sign-in-request.repo';
+import { RevokeAccessTokenService } from './slice/auth/revoke/revoke.access-token.service';
+import { RevokeAccessTokenRepo } from './slice/auth/revoke/revoke.access-token.repo';
+import { AccessToken, AccessTokenSchema } from "@app/ss-common-domain/user/entity/access-token.entity";
+import { SignInRequest, SignInRequestSchema } from "@app/ss-common-domain/user/entity/sign-in-request.entity";
+import { User, UserSchema } from "@app/ss-common-domain/user/entity/user.entity";
 
 @Module({
   imports: [
@@ -72,6 +69,6 @@ import { RevokeAccessTokenRepo } from "./slice/auth/revoke/revoke.access-token.r
     RevokeAccessTokenRepo,
   ],
   controllers: [UserController],
-  exports: [JwtModule,ManageUserAuthService],
+  exports: [JwtModule, ManageUserAuthService],
 })
 export class UserModule {}

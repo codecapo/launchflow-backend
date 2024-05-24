@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GetAccessTokenRepo } from './get.access-token.repo';
-import { AccessToken } from '../../../common/domain/entity/access-token.entity';
+import { AccessToken } from '@app/ss-common-domain/user/entity/access-token.entity';
 
 @Injectable()
 export class GetAccessTokenService {

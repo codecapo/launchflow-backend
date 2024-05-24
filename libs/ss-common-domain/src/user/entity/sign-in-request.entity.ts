@@ -10,6 +10,7 @@ export class SignInRequest {
   nounce: string;
 }
 
-export type SignInRequestDocument = SignInRequest & HydratedDocument<SignInRequest>;
+export type SignInRequestDocument = SignInRequest &
+  HydratedDocument<SignInRequest>;
 
 export const SignInRequestSchema = SchemaFactory.createForClass(SignInRequest);

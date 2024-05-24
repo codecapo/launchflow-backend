@@ -5,15 +5,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { CreateUserService } from '../../manage/create/create.user.service';
 import { GetUsersService } from '../../manage/get/get.user.service';
-import { VerifySignInAuthResponseDto } from '../../../common/domain/dto/verify-sign-in-auth-response.dto';
+
 import { JwtService } from '@nestjs/jwt';
 import { ValidateAccessTokenService } from '../validate/validate.access-token.service';
 import { EncryptionService } from '@app/encryption';
 import { SaveAccessTokenService } from '../save/save.access-token.service';
 import { SaveSignInRequestService } from '../save/save.sign-in-request.service';
-import { SaveSignInRequestDto } from '../../../common/domain/dto/save-sign-in-request.dto';
+
 import { GetSignInRequestService } from '../get/get.sign-in-request.service';
 import { RevokeAccessTokenService } from '../revoke/revoke.access-token.service';
+import { SaveSignInRequestDto } from '@app/ss-common-domain/user/dto/save-sign-in-request.dto';
+import { VerifySignInAuthResponseDto } from '@app/ss-common-domain/user/dto/verify-sign-in-auth-response.dto';
 
 @Injectable()
 export class ManageUserAuthService {

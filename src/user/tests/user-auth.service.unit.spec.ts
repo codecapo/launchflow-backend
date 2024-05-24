@@ -10,14 +10,14 @@ import { RevokeAccessTokenService } from '../slice/auth/revoke/revoke.access-tok
 import { SaveAccessTokenService } from '../slice/auth/save/save.access-token.service';
 import { SaveSignInRequestService } from '../slice/auth/save/save.sign-in-request.service';
 import { TestBed } from '@automock/jest';
-import { AccessToken } from '../common/domain/entity/access-token.entity';
-import { SignInRequest } from '../common/domain/entity/sign-in-request.entity';
+import { AccessToken } from '@app/st-common-domain/user/entity/access-token.entity';
+import { SignInRequest } from '@app/st-common-domain/user/entity/sign-in-request.entity';
 import { EncryptionService } from '@app/encryption';
 import { GetUsersService } from '../slice/manage/get/get.user.service';
 import { CreateUserService } from '../slice/manage/create/create.user.service';
-import { User } from '../common/domain/entity/user.entity';
-import { ValidateAccessTokenService } from "../slice/auth/validate/validate.access-token.service";
-import { JwtService } from "@nestjs/jwt";
+import { User } from '@app/st-common-domain/user/entity/user.entity';
+import { ValidateAccessTokenService } from '../slice/auth/validate/validate.access-token.service';
+import { JwtService } from '@nestjs/jwt';
 
 const msg =
   'CkEPqd6Hn8TFFni9hvky6GJ8amLCtW5X5kW1p1HsZbu1ueGaqma2aJTe3nTqk1xZcZ1NBhh5kM3LMuDqy5xKcXs12nz2e8pAf99V8Epqv9xhjZtqz6yrxsbjxAoMP2UvxCSzMrnhjqAWHfB69v3w62BE1WjtD31eSveAKwhu3GuphJy23prwdTwHfTLGjKGBrnbtsiPyPakcMYr32E4cjZ6wBFpVHefzSqmK6ySEzwyMLVBRUDTx7MHAeYJusZaz6XRLmy8iz2UsGLxCirbNeeCsgLchq2172EGkWVitj9M8Kuiy35dbr5EF6JZv5eEU29PT4VGDdCYG3zSGTCAkKM18UfagvxjZRqKHERXumpPNU2VKMK1XCW7S9N5w4Z2XGWWrDZn5WyNdqtFUdKU7o95Ceo3QnD9wuxNTu2xVVRqfTjHFUmNhdfan6KA7zteVerHqtNWWW8nG8ciyhEQVYvJT6Dyj9MtTcYJHTSqbtvHBh2yFA615EYjwPpBpx9ykCS8mTwyKoD436t2JhfswrYiECXeTVt18zB35TE3qHXR4TTM6v71o9EsZsX7ntubeZZ9HdLEnWiZEnDRMCK3YsDvTzRdWdo21AztnjoKPT32iXqab6Ep';

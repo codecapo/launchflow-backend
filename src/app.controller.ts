@@ -1,6 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { HealthCheck, HealthCheckService, HttpHealthIndicator } from "@nestjs/terminus";
+import {
+  HealthCheck,
+  HealthCheckService,
+  HttpHealthIndicator,
+} from '@nestjs/terminus';
 
 @Controller()
 export class AppController {

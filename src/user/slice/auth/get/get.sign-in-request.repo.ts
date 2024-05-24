@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  SignInRequest,
-  SignInRequestDocument,
-} from '../../../common/domain/entity/sign-in-request.entity';
+
 import { Model } from 'mongoose';
+import { SignInRequest, SignInRequestDocument } from "@app/ss-common-domain/user/entity/sign-in-request.entity";
 @Injectable()
 export class GetSignInRequestRepo {
   constructor(

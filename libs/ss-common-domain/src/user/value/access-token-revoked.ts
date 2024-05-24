@@ -1,5 +1,4 @@
 export class AccessTokenRevoked {
-
   private readonly _walletAddress: string;
   private readonly _revoked: boolean;
 
@@ -11,11 +10,8 @@ export class AccessTokenRevoked {
     return this._walletAddress;
   }
 
-
   constructor(walletAddress: string, revoked: boolean) {
     this._walletAddress = walletAddress;
     this._revoked = revoked;
   }
-
-
 }

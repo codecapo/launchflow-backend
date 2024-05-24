@@ -22,8 +22,10 @@
   "dependencies": {
     "@aws-crypto/client-node": "^4.0.0",
     "@aws-sdk/client-kms": "^3.574.0",
+    "@metaplex-foundation/mpl-token-metadata": "^3.2.1",
     "@metaplex-foundation/umi": "^0.9.1",
     "@metaplex-foundation/umi-bundle-defaults": "^0.9.1",
+    "@metaplex-foundation/umi-bundle-tests": "^0.9.1",
     "@metaplex-foundation/umi-serializers": "^0.9.0",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.0.0",
@@ -34,6 +36,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/terminus": "^10.2.3",
+    "@pinata/sdk": "^2.1.0",
     "@solana/wallet-standard-features": "1.1.0",
     "@solana/wallet-standard-util": "1.1.0",
     "@solana/web3.js": "^1.91.8",
@@ -99,7 +102,9 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@app/encryption(|/.*)$": "<rootDir>/libs/encryption/src/$1"
+      "^@app/encryption(|/.*)$": "<rootDir>/libs/encryption/src/$1",
+      "^@app/solana(|/.*)$": "<rootDir>/libs/solana/src/$1",
+      "^@app/ss-common-domain(|/.*)$": "<rootDir>/libs/ss-common-domain/src/$1"
     }
   }
 }

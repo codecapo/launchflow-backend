@@ -5,11 +5,10 @@ import {
   CommitmentPolicy,
   KmsKeyringNode,
 } from '@aws-crypto/client-node';
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 describe('EncryptionService', () => {
   let encryptionService: EncryptionService;
-
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

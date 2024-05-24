@@ -13,13 +13,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   SignInRequest,
   SignInRequestSchema,
-} from '../common/domain/entity/sign-in-request.entity';
+} from '@app/st-common-domain/user/entity/sign-in-request.entity';
 import { UserModule } from '../user.module';
 import { UserController } from '../user.controller';
 import { HttpModule } from '@nestjs/axios';
 import { SolanaSignInInput } from '@solana/wallet-standard-features';
 import crypto, { UUID } from 'crypto';
-import { VerifySignInAuthRequestDto } from '../common/domain/dto/verify-sign-in-auth-request.dto';
+import { VerifySignInAuthRequestDto } from '@app/st-common-domain/user/dto/verify-sign-in-auth-request.dto';
 
 const msg =
   'CkEPqd6Hn8TFFni9hvky6GJ8amLCtW5X5kW1p1HsZbu1ueGaqma2aJTe3nTqk1xZcZ1NBhh5kM3LMuDqy5xKcXs12nz2e8pAf99V8Epqv9xhjZtqz6yrxsbjxAoMP2UvxCSzMrnhjqAWHfB69v3w62BE1WjtD31eSveAKwhu3GuphJy23prwdTwHfTLGjKGBrnbtsiPyPakcMYr32E4cjZ6wBFpVHefzSqmK6ySEzwyMLVBRUDTx7MHAeYJusZaz6XRLmy8iz2UsGLxCirbNeeCsgLchq2172EGkWVitj9M8Kuiy35dbr5EF6JZv5eEU29PT4VGDdCYG3zSGTCAkKM18UfagvxjZRqKHERXumpPNU2VKMK1XCW7S9N5w4Z2XGWWrDZn5WyNdqtFUdKU7o95Ceo3QnD9wuxNTu2xVVRqfTjHFUmNhdfan6KA7zteVerHqtNWWW8nG8ciyhEQVYvJT6Dyj9MtTcYJHTSqbtvHBh2yFA615EYjwPpBpx9ykCS8mTwyKoD436t2JhfswrYiECXeTVt18zB35TE3qHXR4TTM6v71o9EsZsX7ntubeZZ9HdLEnWiZEnDRMCK3YsDvTzRdWdo21AztnjoKPT32iXqab6Ep';

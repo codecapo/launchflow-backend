@@ -1,6 +1,6 @@
-import { User } from '../../../common/domain/entity/user.entity';
 import { GetUserRepo } from './get.user.repo';
 import { Injectable } from '@nestjs/common';
+import { User } from '@app/ss-common-domain/user/entity/user.entity';
 
 @Injectable()
 export class GetUsersService {

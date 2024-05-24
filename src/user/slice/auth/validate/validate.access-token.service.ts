@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GetAccessTokenService } from '../get/get.access-token.service';
 import { JwtService } from '@nestjs/jwt';
-import { IsTokenExpiredValue } from '../../../common/domain/value/is-token-expired.vo';
+import { IsTokenExpiredValue } from '@app/ss-common-domain/user/value/is-token-expired.vo';
 
 @Injectable()
 export class ValidateAccessTokenService {
@@ -21,8 +21,6 @@ export class ValidateAccessTokenService {
 
     try {
       if (get.accessToken) {
-
-
         const token = await this.jwtService.verifyAsync(get.accessToken, {
           secret: process.env.JWT_KEY,
         });

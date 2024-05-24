@@ -1,7 +1,8 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../../../common/domain/entity/user.entity';
+import { User, UserDocument } from "@app/ss-common-domain/user/entity/user.entity";
+
 
 @Injectable()
 export class GetUserRepo {

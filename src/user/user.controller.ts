@@ -7,7 +7,7 @@ import {
   Logger,
   Post,
 } from '@nestjs/common';
-import { VerifySignInAuthRequestDto } from './common/domain/dto/verify-sign-in-auth-request.dto';
+import { VerifySignInAuthRequestDto } from '@app/ss-common-domain/user/dto/verify-sign-in-auth-request.dto';
 
 @Controller('user')
 export class UserController {

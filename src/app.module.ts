@@ -4,8 +4,9 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { TerminusModule } from "@nestjs/terminus";
-import { HttpModule } from "@nestjs/axios";
+import { TerminusModule } from '@nestjs/terminus';
+import { HttpModule } from '@nestjs/axios';
+import { MintModule } from './mint/mint.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { HttpModule } from "@nestjs/axios";
     UserModule,
     TerminusModule,
     HttpModule,
+    MintModule,
   ],
   controllers: [AppController],
   providers: [AppService],
