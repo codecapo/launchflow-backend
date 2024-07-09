@@ -12,7 +12,7 @@ import { MintModule } from './mint/mint.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     MongooseModule.forRoot(process.env.DB_CONNECTION, {
-      appName: 'solana-stack',
+      dbName: 'test',
     }),
     UserModule,
     TerminusModule,
@@ -25,6 +25,9 @@ import { MintModule } from './mint/mint.module';
 export class AppModule {
   private logger = new Logger('AppModule');
   constructor() {
-    this.logger.log('Solana Stack ' + process.env.ENVIRONMENT);
+    this.logger.log(`Solana Stack is ${process.env.ENVIRONMENT}`);
+    this.logger.log(
+      `Solana Stack connected to ${process.env.CHAIN_ID} network`,
+    );
   }
 }

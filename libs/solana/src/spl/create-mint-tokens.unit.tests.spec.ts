@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateTokenAccountMintTokenService } from '@app/solana-blockchain';
 import { ConfigModule } from '@nestjs/config';
+import { CreateTokenAccountMintTokenService } from '@app/solana';
 
 describe('SolanaBlockchainService', () => {
   let service: CreateTokenAccountMintTokenService;

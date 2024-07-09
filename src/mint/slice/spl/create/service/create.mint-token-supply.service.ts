@@ -15,44 +15,44 @@ export class CreateMintTokenSupplyService {
     private readonly solsUtils: SolsUtils,
   ) {}
 
-  public async mintProjectTokenSupply(
-    createMintTokenSupplyDto: CreateMintTokenSupplyDto,
-  ) {
-    if (!createMintTokenSupplyDto)
-      throw Error(
-        'please populate user wallet and mint token address in order to mint a token',
-      );
-
-    const findProjectToken = await this.commonUserService.getUser(
-      createMintTokenSupplyDto.userWalletAddress,
-    );
-
-    const projectTokenMintPrivKey = findProjectToken.projectTokens.filter(
-      (item) =>
-        item.projectTokenInfo.mintAccountAddress ===
-        createMintTokenSupplyDto.mintAddress,
-    )[0];
-
-    const mintTokenKeyPair = await this.solsUtils.recreateMinKeyPair(
-      projectTokenMintPrivKey.mintKeys.mintPrivKey,
-    );
-
-    const mintTokenSupplyVal: MintTokenSupplyVal = {
-      mintKeyPair: mintTokenKeyPair,
-      tokenName: projectTokenMintPrivKey.projectTokenInfo.name,
-      totalSupply: projectTokenMintPrivKey.projectTokenInfo.supply,
-      userWalletPubKey: createMintTokenSupplyDto.userWalletAddress,
-    };
-
-    const mintSupply =
-      await this.createTokenAccountMintTokenService.mintTokenSupply(
-        mintTokenSupplyVal,
-      );
-
-    this.logger.log(
-      `User ${createMintTokenSupplyDto.userWalletAddress} requested to mint tokens for mint address ${createMintTokenSupplyDto.mintAddress}`,
-    );
-
-    return mintSupply;
-  }
+  // public async mintProjectTokenSupply(
+  //   createMintTokenSupplyDto: CreateMintTokenSupplyDto,
+  // ) {
+  //   if (!createMintTokenSupplyDto)
+  //     throw Error(
+  //       'please populate user wallet and mint token address in order to mint a token',
+  //     );
+  //
+  //   const findProjectToken = await this.commonUserService.getUser(
+  //     createMintTokenSupplyDto.userWalletAddress,
+  //   );
+  //
+  //   const projectTokenMintPrivKey = findProjectToken.projectTokens.filter(
+  //     (item) =>
+  //       item.projectTokenInfo.mintAccountAddress ===
+  //       createMintTokenSupplyDto.mintAddress,
+  //   )[0];
+  //
+  //   const mintTokenKeyPair = await this.solsUtils.recreateMinKeyPair(
+  //     projectTokenMintPrivKey.mintKeys.mintPrivKey,
+  //   );
+  //
+  //   const mintTokenSupplyVal: MintTokenSupplyVal = {
+  //     mintKeyPair: mintTokenKeyPair,
+  //     tokenName: projectTokenMintPrivKey.projectTokenInfo.name,
+  //     totalSupply: projectTokenMintPrivKey.projectTokenInfo.supply,
+  //     userWalletPubKey: createMintTokenSupplyDto.userWalletAddress,
+  //   };
+  //
+  //   const mintSupply =
+  //     await this.createTokenAccountMintTokenService.mintTokenSupply(
+  //       mintTokenSupplyVal,
+  //     );
+  //
+  //   this.logger.log(
+  //     `User ${createMintTokenSupplyDto.userWalletAddress} requested to mint tokens for mint address ${createMintTokenSupplyDto.mintAddress}`,
+  //   );
+  //
+  //   return mintSupply;
+  // }
 }

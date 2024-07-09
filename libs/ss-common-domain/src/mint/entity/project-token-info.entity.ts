@@ -14,10 +14,13 @@ export class ProjectTokenInfo {
   symbol: string;
 
   @Prop()
-  metadataUri: string;
+  metadataUri?: string;
 
   @Prop()
-  mintAccountAddress: string;
+  description: string;
+
+  @Prop()
+  mintAccountAddress?: string;
 
   @Prop()
   supply: number;

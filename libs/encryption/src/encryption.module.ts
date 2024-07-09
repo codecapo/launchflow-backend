@@ -3,7 +3,7 @@ import { EncryptionService } from './encryption.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true })],
+  imports: [ConfigModule.forRoot()],
   providers: [EncryptionService, ConfigService],
   exports: [EncryptionService],
 })

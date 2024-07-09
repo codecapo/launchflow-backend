@@ -10,11 +10,15 @@ export class GetSignInRequestRepo {
     private signInRequestModel: Model<SignInRequestDocument>,
   ) {}
 
-  async getSignInRequest(nounceText: string): Promise<SignInRequest> {
-    return this.signInRequestModel.findOne({ nounce: nounceText });
+  async getSignInRequestNonce(nounceText: string): Promise<SignInRequest> {
+    return this.signInRequestModel.findOne({ nonce: nounceText });
   }
 
   async getSignInRequestById(id: string): Promise<SignInRequest> {
     return this.signInRequestModel.findById({ _id: id });
+  }
+
+  async getSignInRequestByPublicKey(publicKey: string): Promise<SignInRequest> {
+    return this.signInRequestModel.findOne({ publicKey: publicKey });
   }
 }

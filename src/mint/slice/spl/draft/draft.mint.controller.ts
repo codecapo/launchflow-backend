@@ -1,14 +1,25 @@
-import { Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { DraftMintService } from './draft.mint.service';
 import { DraftMintDto } from '@app/ss-common-domain/mint/dto/draft-mint.dto';
 
-@Controller()
+class DraftMintTokenRequestDto {
+  userWalletAddress: string;
+}
+
+@Controller('draft')
 export class DraftMintController {
   constructor(private readonly draftMintService: DraftMintService) {}
 
-  @Post()
+  @Post('project-token')
   @HttpCode(201)
-  async createDraftMint(userWalletAddress: string): Promise<DraftMintDto> {
-    return await this.draftMintService.createDraftMint(userWalletAddress);
+  async createDraftMint(
+    @Body() draftMintTokenRequestDto: DraftMintTokenRequestDto,
+  ): Promise<DraftMintDto> {
+
+    console.log(draftMintTokenRequestDto);
+
+    return await this.draftMintService.createDraftMint(
+      draftMintTokenRequestDto.userWalletAddress,
+    );
   }
 }

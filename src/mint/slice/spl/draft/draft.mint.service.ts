@@ -4,7 +4,10 @@ import * as base58 from 'bs58';
 
 import { DraftMintRepo } from './draft.mint.repo';
 import { DraftMintDto } from '@app/ss-common-domain/mint/dto/draft-mint.dto';
-import { MintKeyPair, ProjectToken } from "@app/ss-common-domain/mint/entity/project-token.entity";
+import {
+  MintKeyPair,
+  ProjectToken,
+} from '@app/ss-common-domain/mint/entity/project-token.entity';
 import { SolsUtils } from '@app/solana/utils/sols-utils.service';
 
 @Injectable()
@@ -38,7 +41,7 @@ export class DraftMintService {
       projectToken,
     );
 
-    if (saveDraftMint.acknowledged) {
+    if (!(saveDraftMint.modifiedCount == 0)) {
       const draftMintDto: DraftMintDto = {
         mintPriv: encodedBase58PrivKey,
         mintPub: mintKeyPair.publicKey,

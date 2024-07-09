@@ -3,20 +3,23 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
   Logger,
   Post,
 } from '@nestjs/common';
 import { VerifySignInAuthRequestDto } from '@app/ss-common-domain/user/dto/verify-sign-in-auth-request.dto';
+
+interface UserAuthRequest {
+  nonce: string;
+}
 
 @Controller('user')
 export class UserController {
   private logger: Logger = new Logger(UserController.name);
   constructor(private userAuthService: ManageUserAuthService) {}
 
-  @Get('auth')
-  async createAuthRequest() {
-    return this.userAuthService.userSignIn();
+  @Post('auth')
+  async createAuthRequest(@Body() authRequest: UserAuthRequest) {
+    return await this.userAuthService.userSignIn(authRequest.nonce);
   }
 
   @Post('sign-in')

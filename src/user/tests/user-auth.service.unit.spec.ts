@@ -136,12 +136,12 @@ describe('User Authentication Tests', () => {
 
     mockSignInRequest.nounce = 'nounceText';
 
-    getSignInRequestRepo.getSignInRequest.mockResolvedValue(mockSignInRequest);
+    getSignInRequestRepo.getSignInRequestNonce.mockResolvedValue(mockSignInRequest);
 
     const signInRequest =
-      await getSignInRequestService.getSignInRequest('nounceText');
+      await getSignInRequestService.getSignInRequestByNonce('nounceText');
 
-    expect(getSignInRequestRepo.getSignInRequest).toHaveBeenCalled();
+    expect(getSignInRequestRepo.getSignInRequestNonce).toHaveBeenCalled();
     expect(signInRequest).toEqual(mockSignInRequest);
   });
 
@@ -162,7 +162,7 @@ describe('User Authentication Tests', () => {
     signInRequest.nounce = subMessage;
     signInRequest.requestId = '32a77880-7b8e-4786-8f5e-2f60bb8c33ac';
 
-    getSignInRequestServiceManageUserAuthService.getSignInRequest.mockResolvedValue(
+    getSignInRequestServiceManageUserAuthService.getSignInRequestByNonce.mockResolvedValue(
       signInRequest,
     );
 
@@ -170,7 +170,7 @@ describe('User Authentication Tests', () => {
       signInRequest.nounce,
     );
 
-    getSignInRequestRepo.getSignInRequest.mockResolvedValue(signInRequest);
+    getSignInRequestRepo.getSignInRequestNonce.mockResolvedValue(signInRequest);
 
     const manage = await manageUserAuthService.verifyWalletSignIn(msg, sig, pk);
     expect(manage).toBeTruthy();
@@ -181,7 +181,7 @@ describe('User Authentication Tests', () => {
     signInRequest.nounce = subMessage;
     signInRequest.requestId = '32a77880-7b8e-4786-8f5e-2f60bb8c33ac';
 
-    getSignInRequestServiceManageUserAuthService.getSignInRequest.mockResolvedValue(
+    getSignInRequestServiceManageUserAuthService.getSignInRequestByNonce.mockResolvedValue(
       signInRequest,
     );
 
@@ -189,7 +189,7 @@ describe('User Authentication Tests', () => {
       signInRequest.nounce,
     );
 
-    getSignInRequestRepo.getSignInRequest.mockResolvedValue(signInRequest);
+    getSignInRequestRepo.getSignInRequestNonce.mockResolvedValue(signInRequest);
 
     const manage = await manageUserAuthService.verifyWalletSignIn(
       msgInvalid,

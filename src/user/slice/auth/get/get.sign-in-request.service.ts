@@ -6,11 +6,15 @@ import { SignInRequest } from '@app/ss-common-domain/user/entity/sign-in-request
 export class GetSignInRequestService {
   constructor(private readonly getSignInRequestRepo: GetSignInRequestRepo) {}
 
-  async getSignInRequest(nounceText: string): Promise<SignInRequest> {
-    return await this.getSignInRequestRepo.getSignInRequest(nounceText);
+  async getSignInRequestByNonce(nounceText: string): Promise<SignInRequest> {
+    return await this.getSignInRequestRepo.getSignInRequestNonce(nounceText);
   }
 
   async getSignInRequestById(id: string): Promise<SignInRequest> {
     return await this.getSignInRequestRepo.getSignInRequestById(id);
+  }
+
+  async getSignInRequestByPublicKey(pubkey: string): Promise<SignInRequest> {
+    return await this.getSignInRequestRepo.getSignInRequestByPublicKey(pubkey);
   }
 }
