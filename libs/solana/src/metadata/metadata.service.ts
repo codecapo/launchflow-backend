@@ -135,8 +135,10 @@ export class MetadataService {
         uri: process.env.PINATA_BASE_URL + res.data.IpfsHash,
       };
 
-      this.logger.log('Token creator uploaded metadata to ipfs');
-      this.logger.log(`${process.env.PINATA_BASE_URL + res.data.IpfsHash}`);
+      this.logger.log('Uploaded metadata to ipfs');
+      this.logger.log(
+        `Metadata Uri ${process.env.PINATA_BASE_URL + res.data.IpfsHash}`,
+      );
       return pinFileOk;
     }
   }

@@ -1,8 +1,7 @@
-import { CreateTokenMintAccountService } from '../service/create.token-mint-account.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { MintModule } from '../../../../mint.module';
-import { CreateTokenAccountMintTokenService, SolanaModule } from '@app/solana';
+import { SerialisedCreateMintTokenService, SolanaModule } from '@app/solana';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -16,7 +15,7 @@ describe('Create Token Mint Account Service', () => {
   let app: INestApplication;
   let httpService: HttpService;
   let solsUtil: SolsUtils;
-  let createTokenAccountService: CreateTokenMintAccountService;
+  let serialisedCreateMintTokenService: SerialisedCreateMintTokenService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,9 +30,10 @@ describe('Create Token Mint Account Service', () => {
     }).compile();
 
     app = module.createNestApplication();
-    createTokenAccountService = module.get<CreateTokenMintAccountService>(
-      CreateTokenAccountMintTokenService,
-    );
+    serialisedCreateMintTokenService =
+      module.get<SerialisedCreateMintTokenService>(
+        SerialisedCreateMintTokenService,
+      );
 
     solsUtil = module.get<SolsUtils>(SolsUtils);
 

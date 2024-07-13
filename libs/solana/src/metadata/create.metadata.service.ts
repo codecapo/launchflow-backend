@@ -1,10 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PinataMetadata } from '@pinata/sdk';
-import {
-  AssetType,
-  MetadataService,
-} from '@app/solana/metadata/metadata.service';
-import * as crypto from 'node:crypto';
+import { Injectable, Logger } from "@nestjs/common";
+import { PinataMetadata } from "@pinata/sdk";
+import { AssetType, MetadataService } from "@app/solana/metadata/metadata.service";
+import * as crypto from "node:crypto";
 
 @Injectable()
 export class CreateMetadataService {
@@ -37,15 +34,11 @@ export class CreateMetadataService {
 
     const imagePinLink = `${process.env.PINATA_BASE_URL}${imagePin.ipfsHash}`;
 
-    const uploadTokenMetadataResponse = await this.metadataService.pinJson(
+    return await this.metadataService.pinJson(
       tokenName,
       tokenSymbol,
       tokenDescription,
       imagePinLink,
     );
-
-    this.logger.log(`Metadata created ${uploadTokenMetadataResponse}`);
-
-    return uploadTokenMetadataResponse;
   }
 }

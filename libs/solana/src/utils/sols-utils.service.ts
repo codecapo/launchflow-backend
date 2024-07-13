@@ -24,7 +24,7 @@ interface DevWallet {
 
 @Injectable()
 export class SolsUtils {
-  private endpoint: string = process.env.QUICKNODE_ENDPOINT;
+  private endpoint: string = process.env.RPC_ENDPOINT;
   private privKey: string = process.env.BACKEND_PRIV_KEY;
   private umi = createUmi(this.endpoint);
 
