@@ -5,15 +5,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { CreateUserService } from '../../manage/create/create.user.service';
 import { GetUsersService } from '../../manage/get/get.user.service';
-import { VerifySignInAuthResponseDto } from '../../../common/domain/dto/verify-sign-in-auth-response.dto';
+
 import { JwtService } from '@nestjs/jwt';
 import { ValidateAccessTokenService } from '../validate/validate.access-token.service';
 import { EncryptionService } from '@app/encryption';
 import { SaveAccessTokenService } from '../save/save.access-token.service';
 import { SaveSignInRequestService } from '../save/save.sign-in-request.service';
-import { SaveSignInRequestDto } from '../../../common/domain/dto/save-sign-in-request.dto';
+
 import { GetSignInRequestService } from '../get/get.sign-in-request.service';
 import { RevokeAccessTokenService } from '../revoke/revoke.access-token.service';
+import { SaveSignInRequestDto } from '@app/ss-common-domain/user/dto/save-sign-in-request.dto';
+import { VerifySignInAuthResponseDto } from '@app/ss-common-domain/user/dto/verify-sign-in-auth-response.dto';
+import * as generator from 'generate-password';
 
 @Injectable()
 export class ManageUserAuthService {
@@ -24,41 +27,42 @@ export class ManageUserAuthService {
     private readonly getUserService: GetUsersService,
     private readonly jwtService: JwtService,
     private readonly validateAccessTokenService: ValidateAccessTokenService,
-    private readonly encryptionService: EncryptionService,
     private readonly saveAccessTokenService: SaveAccessTokenService,
     private readonly getSignInRequestService: GetSignInRequestService,
     private readonly saveSignInRequestService: SaveSignInRequestService,
     private readonly revokeAccessTokenService: RevokeAccessTokenService,
   ) {}
 
-  async userSignIn() {
+  async userSignIn(publicKey: string) {
     const now: Date = new Date();
     const uri = `${process.env.SIGN_IN_URL}`;
     const currentUrl = new URL(uri);
     const domain = currentUrl.host;
 
-    const nounce = await this.encryptionService.kmsEncrypt(crypto.randomUUID());
-
     const currentDateTime = now.toISOString();
+
+    const generatedNounce = generator.generate({
+      length: 10,
+      numbers: true,
+    });
 
     const signInData: SolanaSignInInput = {
       domain,
       statement: 'Solana Stack wants to sign you in using your wallet',
       version: '1',
-      nonce: nounce,
+      nonce: generatedNounce,
       chainId: 'devnet',
       issuedAt: currentDateTime,
       requestId: crypto.randomUUID(),
     };
 
     const signInRequestData: SaveSignInRequestDto = {
-      nounce: signInData.nonce,
       requestId: signInData.requestId,
+      nonce: generatedNounce,
+      publicKey: publicKey,
     };
 
     await this.saveSignInRequestService.saveSignInRequest(signInRequestData);
-
-    this.logger.log('Received sign in request from user');
 
     return signInData;
   }
@@ -69,28 +73,18 @@ export class ManageUserAuthService {
     const publicKey = base58.decode(pk);
 
     const stringMsg = Buffer.from(message).toString('utf8');
-    const startPoint = stringMsg.indexOf('nounce');
-    const endPoint = stringMsg.indexOf('chain id');
+    const startPoint = stringMsg.indexOf('Nonce');
+    const endPoint = stringMsg.indexOf('Issued At:');
 
-    const subMessage = stringMsg.substring(startPoint + 7, endPoint).trim();
+    const subMessage = stringMsg.substring(startPoint + 6, endPoint).trim();
 
     const getSignInRequest =
-      await this.getSignInRequestService.getSignInRequest(subMessage);
+      await this.getSignInRequestService.getSignInRequestByNonce(subMessage);
 
     if (getSignInRequest === null)
       throw Error('Sign in request not found for user');
 
-    const decryptedPayloadNounce =
-      await this.encryptionService.kmsDecryptAndVerify(subMessage);
-
-    const decryptedDbNounce = await this.encryptionService.kmsDecryptAndVerify(
-      getSignInRequest.nounce,
-    );
-
-    const isMatch = decryptedPayloadNounce === decryptedDbNounce;
-
-    const verified =
-      isMatch && nacl.sign.detached.verify(message, signature, publicKey);
+    const verified = nacl.sign.detached.verify(message, signature, publicKey);
 
     verified
       ? this.logger.log(`User ${pk} is verified`)

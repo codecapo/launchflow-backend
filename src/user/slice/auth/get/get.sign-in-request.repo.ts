@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  SignInRequest,
-  SignInRequestDocument,
-} from '../../../common/domain/entity/sign-in-request.entity';
+
 import { Model } from 'mongoose';
+import { SignInRequest, SignInRequestDocument } from "@app/ss-common-domain/user/entity/sign-in-request.entity";
 @Injectable()
 export class GetSignInRequestRepo {
   constructor(
@@ -12,11 +10,15 @@ export class GetSignInRequestRepo {
     private signInRequestModel: Model<SignInRequestDocument>,
   ) {}
 
-  async getSignInRequest(nounceText: string): Promise<SignInRequest> {
-    return this.signInRequestModel.findOne({ nounce: nounceText });
+  async getSignInRequestNonce(nounceText: string): Promise<SignInRequest> {
+    return this.signInRequestModel.findOne({ nonce: nounceText });
   }
 
   async getSignInRequestById(id: string): Promise<SignInRequest> {
     return this.signInRequestModel.findById({ _id: id });
+  }
+
+  async getSignInRequestByPublicKey(publicKey: string): Promise<SignInRequest> {
+    return this.signInRequestModel.findOne({ publicKey: publicKey });
   }
 }

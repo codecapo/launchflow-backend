@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  AccessToken,
-  AccessTokenDocument,
-} from '../../../common/domain/entity/access-token.entity';
+
 import { Model } from 'mongoose';
+import { AccessToken, AccessTokenDocument } from "@app/ss-common-domain/user/entity/access-token.entity";
 
 @Injectable()
 export class SaveAccessTokenRepo {

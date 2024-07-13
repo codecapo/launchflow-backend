@@ -1,4 +1,3 @@
-import { Min } from 'class-validator';
 
 export class VerifySignInAuthRequestDto {
   // @Min(1, {

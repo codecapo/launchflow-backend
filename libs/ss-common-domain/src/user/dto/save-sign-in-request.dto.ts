@@ -1,4 +1,5 @@
 export class SaveSignInRequestDto {
   requestId: string;
-  nounce: string;
+  publicKey: string;
+  nonce: string;
 }

@@ -23,6 +23,24 @@
       ],
       "@app/encryption/*": [
         "libs/encryption/src/*"
+      ],
+      "@app/solana": [
+        "libs/solana/src"
+      ],
+      "@app/solana/*": [
+        "libs/solana/src/*"
+      ],
+      "@app/ss-common-domain": [
+        "libs/ss-common-domain/src"
+      ],
+      "@app/ss-common-domain/*": [
+        "libs/ss-common-domain/src/*"
+      ],
+      "@app/aws": [
+        "libs/aws/src"
+      ],
+      "@app/aws/*": [
+        "libs/aws/src/*"
       ]
     }
   }

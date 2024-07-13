@@ -12,6 +12,12 @@
   },
   "moduleNameMapper": {
     "@app/encryption/(.*)": "<rootDir>/../libs/encryption/src/$1",
-    "@app/encryption": "<rootDir>/../libs/encryption/src"
+    "@app/encryption": "<rootDir>/../libs/encryption/src",
+    "@app/solana-blockchain/(.*)": "<rootDir>/../libs/solana-blockchain/src/$1",
+    "@app/solana-blockchain": "<rootDir>/../libs/solana-blockchain/src",
+    "@app/st-common-domain/(.*)": "<rootDir>/../libs/st-common-domain/src/$1",
+    "@app/st-common-domain": "<rootDir>/../libs/st-common-domain/src",
+    "@app/aws/(.*)": "<rootDir>/../libs/aws/src/$1",
+    "@app/aws": "<rootDir>/../libs/aws/src"
   }
 }

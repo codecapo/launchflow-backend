@@ -2,7 +2,7 @@ import { ValidateAccessTokenService } from '../slice/auth/validate/validate.acce
 import { TestBed } from '@automock/jest';
 import { GetAccessTokenService } from '../slice/auth/get/get.access-token.service';
 import { JwtService } from '@nestjs/jwt';
-import { AccessToken } from '../common/domain/entity/access-token.entity';
+import { AccessToken } from '@app/st-common-domain/user/entity/access-token.entity';
 
 const pk = '8SuB8Wkoj4nc9d5GbEp6gfbmSdsmNzaTeUQTz1FVFgsz';
 

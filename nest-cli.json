@@ -15,6 +15,33 @@
       "compilerOptions": {
         "tsConfigPath": "libs/encryption/tsconfig.lib.json"
       }
+    },
+    "solana": {
+      "type": "library",
+      "root": "libs/solana",
+      "entryFile": "index",
+      "sourceRoot": "libs/solana/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/solana/tsconfig.lib.json"
+      }
+    },
+    "ss-common-domain": {
+      "type": "library",
+      "root": "libs/ss-common-domain",
+      "entryFile": "index",
+      "sourceRoot": "libs/ss-common-domain/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/ss-common-domain/tsconfig.lib.json"
+      }
+    },
+    "aws": {
+      "type": "library",
+      "root": "libs/aws",
+      "entryFile": "index",
+      "sourceRoot": "libs/aws/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/aws/tsconfig.lib.json"
+      }
     }
   }
 }

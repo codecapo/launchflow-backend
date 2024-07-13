@@ -1,6 +1,7 @@
 import { CreateUserRepo } from './create.user.repo';
-import { User } from '../../../common/domain/entity/user.entity';
+
 import { Injectable } from '@nestjs/common';
+import { User } from '@app/ss-common-domain/user/entity/user.entity';
 
 @Injectable()
 export class CreateUserService {
@@ -10,6 +11,7 @@ export class CreateUserService {
 
     const user: User = {
       publicKey: address,
+      projectTokens: [],
     };
 
     return await this.createUseRepo.createUser(user);

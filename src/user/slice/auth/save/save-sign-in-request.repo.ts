@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+
+import { Model } from 'mongoose';
 import {
   SignInRequest,
   SignInRequestDocument,
-} from '../../../common/domain/entity/sign-in-request.entity';
-import { Model } from 'mongoose';
+} from '@app/ss-common-domain/user/entity/sign-in-request.entity';
 
 @Injectable()
 export class SaveSignInRequestRepo {
@@ -16,7 +17,12 @@ export class SaveSignInRequestRepo {
   async saveSignInRequest(
     signInRequest: SignInRequest,
   ): Promise<SignInRequest> {
-    const newSignInRequest = new this.signInRequestModel(signInRequest);
-    return newSignInRequest.save();
+    const request: SignInRequest = {
+      publicKey: signInRequest.publicKey,
+      requestId: signInRequest.requestId,
+      nonce: signInRequest.nonce,
+    };
+    const newSignInRequest = new this.signInRequestModel(request);
+    return await newSignInRequest.save();
   }
 }

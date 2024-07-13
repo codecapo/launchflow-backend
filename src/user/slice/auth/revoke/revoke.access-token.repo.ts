@@ -1,11 +1,9 @@
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  AccessToken,
-  AccessTokenDocument,
-} from '../../../common/domain/entity/access-token.entity';
+
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { AccessTokenRevoked } from '../../../common/domain/value/access-token-revoked';
+import { AccessToken, AccessTokenDocument } from "@app/ss-common-domain/user/entity/access-token.entity";
+import { AccessTokenRevoked } from "@app/ss-common-domain/user/value/access-token-revoked";
 
 @Injectable()
 export class RevokeAccessTokenRepo {

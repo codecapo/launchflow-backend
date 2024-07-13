@@ -7,9 +7,13 @@ export class SignInRequest {
   requestId: string;
 
   @Prop()
-  nounce: string;
+  nonce?: string;
+
+  @Prop()
+  publicKey: string;
 }
 
-export type SignInRequestDocument = SignInRequest & HydratedDocument<SignInRequest>;
+export type SignInRequestDocument = SignInRequest &
+  HydratedDocument<SignInRequest>;
 
 export const SignInRequestSchema = SchemaFactory.createForClass(SignInRequest);

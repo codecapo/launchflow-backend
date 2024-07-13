@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ManageUserAuthService } from '../manage/manage.user-auth.service';
 import { SaveAccessTokenRepo } from './save.access-token.repo';
-import { AccessToken } from '../../../common/domain/entity/access-token.entity';
+import { AccessToken } from '@app/ss-common-domain/user/entity/access-token.entity';
 
 @Injectable()
 export class SaveAccessTokenService {
