@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { MetadataService } from '@app/solana/metadata/metadata.service';
 import { AwsModule } from '@app/aws';
-import { fsReadFile } from "ts-loader/dist/utils";
-import * as fs from "node:fs";
+import * as fs from 'node:fs';
 
 describe('Metadata Pinning Service Tests', () => {
   let metadataService: MetadataService;
@@ -22,25 +21,22 @@ describe('Metadata Pinning Service Tests', () => {
   });
 
   it('should pin image directly', async () => {
-    const fsFile = Buffer.from(fs.readFileSync(
-      './yellowfile.jpeg',
-      'binary',
-    ));
+    const fsFile = Buffer.from(fs.readFileSync('./yellowfile.jpeg', 'binary'));
     const file: Express.Multer.File = {
       buffer: fsFile,
-      destination: "",
-      encoding: "",
-      fieldname: "files",
-      filename: "yellofile.jpeg",
-      mimetype: "",
-      originalname: "",
-      path: "",
+      destination: '',
+      encoding: '',
+      fieldname: 'files',
+      filename: 'yellofile.jpeg',
+      mimetype: '',
+      originalname: '',
+      path: '',
       size: fsFile.length,
-      stream: undefined
+      stream: undefined,
     };
     const pin = await metadataService.pinFile(file);
 
-    console.log(pin)
+    console.log(pin);
   });
 
   it('should pin image from controller post', async () => {

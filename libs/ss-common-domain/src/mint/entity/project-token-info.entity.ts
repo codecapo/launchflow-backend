@@ -20,8 +20,17 @@ export class ProjectTokenInfo {
   description: string;
 
   @Prop()
-  mintAccountAddress?: string;
+  supply: number;
 
   @Prop()
-  supply: number;
+  mintPrivKey?: string;
+
+  @Prop()
+  mintPubKey: string;
+
+  @Prop()
+  mintAuthPrivKey: string;
+
+  @Prop()
+  mintAuthPubKey: string;
 }

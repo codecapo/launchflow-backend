@@ -1,9 +1,9 @@
-import { GetAccessTokenRepo } from '../slice/auth/get/get.access-token.repo';
+import { GetAccessTokenRepo } from '@app/ss-common-domain/user/auth/get.access-token.repo';
 import { GetSignInRequestRepo } from '../slice/auth/get/get.sign-in-request.repo';
 import { RevokeAccessTokenRepo } from '../slice/auth/revoke/revoke.access-token.repo';
 import { SaveAccessTokenRepo } from '../slice/auth/save/save.access-token.repo';
 import { SaveSignInRequestRepo } from '../slice/auth/save/save-sign-in-request.repo';
-import { GetAccessTokenService } from '../slice/auth/get/get.access-token.service';
+import { GetAccessTokenService } from '@app/ss-common-domain/user/auth/get.access-token.service';
 import { GetSignInRequestService } from '../slice/auth/get/get.sign-in-request.service';
 import { ManageUserAuthService } from '../slice/auth/manage/manage.user-auth.service';
 import { RevokeAccessTokenService } from '../slice/auth/revoke/revoke.access-token.service';
@@ -136,7 +136,9 @@ describe('User Authentication Tests', () => {
 
     mockSignInRequest.nounce = 'nounceText';
 
-    getSignInRequestRepo.getSignInRequestNonce.mockResolvedValue(mockSignInRequest);
+    getSignInRequestRepo.getSignInRequestNonce.mockResolvedValue(
+      mockSignInRequest,
+    );
 
     const signInRequest =
       await getSignInRequestService.getSignInRequestByNonce('nounceText');

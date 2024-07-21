@@ -1,4 +1,4 @@
-import { PinataMetadata, PinataOptions } from '@pinata/sdk';
+import { PinataMetadata } from '@pinata/sdk';
 
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';

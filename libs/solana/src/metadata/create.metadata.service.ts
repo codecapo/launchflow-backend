@@ -1,7 +1,10 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { PinataMetadata } from "@pinata/sdk";
-import { AssetType, MetadataService } from "@app/solana/metadata/metadata.service";
-import * as crypto from "node:crypto";
+import { Injectable, Logger } from '@nestjs/common';
+import { PinataMetadata } from '@pinata/sdk';
+import {
+  AssetType,
+  MetadataService,
+} from '@app/solana/metadata/metadata.service';
+import * as crypto from 'node:crypto';
 
 @Injectable()
 export class CreateMetadataService {

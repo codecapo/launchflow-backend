@@ -47,14 +47,16 @@ export class CreateTokenSerialisedResponse {
 }
 
 export class CreateAndMintTokenRequest {
+  type?: string;
+  userWalletAddress?: string;
   name: string;
   symbol: string;
   description: string;
-  mintToPublishAddress: string;
   mintAmount: number;
 }
 
 export class CreateAndMintTokenResponse {
+  metadataUri?: string;
   mintPrivKey: string;
   mintPubkey: string;
   mintAuthPrivKey: string;
@@ -62,12 +64,11 @@ export class CreateAndMintTokenResponse {
   serialisedTransaction: string;
 }
 
-/*
-* {
-    "name": "YELLOW BIRDY",
-    "symbol": "$YBIRDY",
-    "description": "Lucky yellow bird, mint token and 10x your investment!!!!",
-    "mintToPublishAddress": "GVwWKQYQ7JhPcZ6vJjTAi4qnymgQkcgEiH3JFGYUKWDW",
-    "mintAmount": 1000
+export class RevokeMintAuthorityResponse {
+  transactionSignature: string;
 }
-* */
+
+export class CreateAndMintSerialisedTransactionWithUserResponse {
+  serialisedTransaction: string;
+  userWalletAddress: string;
+}

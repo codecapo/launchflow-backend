@@ -8,8 +8,9 @@ import {
 import * as base58 from 'bs58';
 import { CreateNonceAccountResponse } from '@app/ss-common-domain/mint/dto/spl.dtos';
 import { SolsUtils } from '@app/solana/utils/sols-utils.service';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
+@Injectable()
 export class CreateNonceService {
   private readonly logger: Logger = new Logger();
   private connection = new Connection(process.env.RPC_ENDPOINT);

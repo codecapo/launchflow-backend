@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import {
   SignInRequest,
   SignInRequestDocument,
-} from '@app/ss-common-domain/user/entity/sign-in-request.entity';
+} from '@app/ss-common-domain/user/base/entity/sign-in-request.entity';
 
 @Injectable()
 export class SaveSignInRequestRepo {

@@ -1,21 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as base58 from 'bs58';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import {
-  createSignerFromKeypair,
-  Keypair,
-  keypairIdentity,
-  Umi,
-} from '@metaplex-foundation/umi';
-import { EncryptionService } from '@app/encryption';
-import { SolanaSignInInput } from '@solana/wallet-standard-features';
-import axios from 'axios';
 
-interface VerifyAuthRequest {
-  publicKey: any;
-  signature: any;
-  message: any;
-}
+import { EncryptionService } from '@app/encryption';
+import { Keypair, PublicKey, Signer } from '@solana/web3.js';
 
 interface DevWallet {
   privKey: string;
@@ -31,36 +19,11 @@ export class SolsUtils {
   private logger: Logger = new Logger(SolsUtils.name);
   constructor(private readonly encryptionService: EncryptionService) {}
 
-  public getUmi() {
-    return this.umi;
-  }
-  public async getEndpointInfo() {
-    return this.umi.rpc.getEndpoint();
-  }
-
   public async decryptAndRecreateMinKeyPair(mintPrivKey: string) {
     const decryptedPrivKey =
       await this.encryptionService.kmsDecryptAndVerify(mintPrivKey);
     const decodedPrivKey = base58.decode(decryptedPrivKey);
     return this.umi.eddsa.createKeypairFromSecretKey(decodedPrivKey);
-  }
-
-  public async recreateMinKeyPair(mintPrivKey: string) {
-    const decodedPrivKey = base58.decode(mintPrivKey);
-    return this.umi.eddsa.createKeypairFromSecretKey(decodedPrivKey);
-  }
-
-  public async getSolStackBackendSigner() {
-    const decodedPrivKey = base58.decode(this.privKey);
-    return this.umi.eddsa.createKeypairFromSecretKey(decodedPrivKey);
-  }
-
-  public async getLatestBlockhash() {
-    return await this.umi.rpc.getLatestBlockhash();
-  }
-
-  public async getMintSignerKeyPair(mintKeyPair: Keypair) {
-    return createSignerFromKeypair(this.umi, mintKeyPair);
   }
 
   public async initialiseMintKeyPair() {
@@ -108,5 +71,18 @@ export class SolsUtils {
     );
 
     return walletDetails[walletPick];
+  }
+
+  public async getNonceAccount() {
+    const nonceAccountPubkey = new PublicKey(process.env.NONCE_ACCOUNT_PUB_KEY);
+
+    const nonceAccountAuth = Keypair.fromSecretKey(
+      base58.decode(process.env.NONCE_ACCOUNT_AUTH_PRIV_KEY),
+    );
+
+    const nonceAccountAuthSigner: Signer = {
+      publicKey: nonceAccountAuth.publicKey,
+      secretKey: nonceAccountAuth.secretKey,
+    };
   }
 }

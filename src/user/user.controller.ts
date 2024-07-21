@@ -6,7 +6,7 @@ import {
   Logger,
   Post,
 } from '@nestjs/common';
-import { VerifySignInAuthRequestDto } from '@app/ss-common-domain/user/dto/verify-sign-in-auth-request.dto';
+import { VerifySignInAuthRequestDto } from '@app/ss-common-domain/user/base/dto/verify-sign-in-auth-request.dto';
 
 interface UserAuthRequest {
   nonce: string;

@@ -1,6 +1,6 @@
 import { ValidateAccessTokenService } from '../slice/auth/validate/validate.access-token.service';
 import { TestBed } from '@automock/jest';
-import { GetAccessTokenService } from '../slice/auth/get/get.access-token.service';
+import { GetAccessTokenService } from '@app/ss-common-domain/user/auth/get.access-token.service';
 import { JwtService } from '@nestjs/jwt';
 import { AccessToken } from '@app/st-common-domain/user/entity/access-token.entity';
 
