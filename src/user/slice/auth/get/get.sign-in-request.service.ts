@@ -1,6 +1,6 @@
 import { GetSignInRequestRepo } from './get.sign-in-request.repo';
 import { Injectable } from '@nestjs/common';
-import { SignInRequest } from '@app/ss-common-domain/user/entity/sign-in-request.entity';
+import { SignInRequest } from '@app/ss-common-domain/user/base/entity/sign-in-request.entity';
 
 @Injectable()
 export class GetSignInRequestService {

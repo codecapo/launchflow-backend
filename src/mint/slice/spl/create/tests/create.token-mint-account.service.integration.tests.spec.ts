@@ -6,7 +6,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { MongooseModule } from '@nestjs/mongoose';
 import { HttpModule, HttpService } from '@nestjs/axios';
-import { SplMintController } from '../controller/spl.mint.controller';
+import { SplCreateController } from '../controller/spl.create.controller';
 import { MetadataController } from '../../../metadata/controller/metadata.controller';
 import { SolsUtils } from '@app/solana/utils/sols-utils.service';
 
@@ -26,7 +26,7 @@ describe('Create Token Mint Account Service', () => {
         SolanaModule,
         MongooseModule.forRoot(process.env.DB_CONNECTION, { dbName: 'test' }),
       ],
-      controllers: [SplMintController, MetadataController],
+      controllers: [SplCreateController, MetadataController],
     }).compile();
 
     app = module.createNestApplication();

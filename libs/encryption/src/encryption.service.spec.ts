@@ -1,10 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EncryptionService } from './encryption.service';
-import {
-  buildClient,
-  CommitmentPolicy,
-  KmsKeyringNode,
-} from '@aws-crypto/client-node';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 describe('EncryptionService', () => {

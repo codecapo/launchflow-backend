@@ -8,14 +8,13 @@ import { GetUsersService } from '../../manage/get/get.user.service';
 
 import { JwtService } from '@nestjs/jwt';
 import { ValidateAccessTokenService } from '../validate/validate.access-token.service';
-import { EncryptionService } from '@app/encryption';
 import { SaveAccessTokenService } from '../save/save.access-token.service';
 import { SaveSignInRequestService } from '../save/save.sign-in-request.service';
 
 import { GetSignInRequestService } from '../get/get.sign-in-request.service';
 import { RevokeAccessTokenService } from '../revoke/revoke.access-token.service';
-import { SaveSignInRequestDto } from '@app/ss-common-domain/user/dto/save-sign-in-request.dto';
-import { VerifySignInAuthResponseDto } from '@app/ss-common-domain/user/dto/verify-sign-in-auth-response.dto';
+import { SaveSignInRequestDto } from '@app/ss-common-domain/user/base/dto/save-sign-in-request.dto';
+import { VerifySignInAuthResponseDto } from '@app/ss-common-domain/user/base/dto/verify-sign-in-auth-response.dto';
 import * as generator from 'generate-password';
 
 @Injectable()
@@ -114,6 +113,7 @@ export class ManageUserAuthService {
         await this.getUserOrCreateIfUserNotExist(walletAddress);
 
       if (findCreateUser) {
+        this.logger.debug(`Found user ${findCreateUser.publicKey}`);
         const token =
           await this.validateAccessTokenService.isAccessTokenExpired(
             walletAddress,
@@ -135,7 +135,6 @@ export class ManageUserAuthService {
 
           const verifySignInAuthResponse: VerifySignInAuthResponseDto = {
             accessToken: newAccessToken,
-            isValidWalletUser: isWalletAuthVerified,
           };
 
           this.logger.log(`Successfully authenticated user ${walletAddress}`);
@@ -167,7 +166,6 @@ export class ManageUserAuthService {
 
             return {
               accessToken: revokeAndIssueAccessToken,
-              isValidWalletUser: isWalletAuthVerified,
             };
           }
         }

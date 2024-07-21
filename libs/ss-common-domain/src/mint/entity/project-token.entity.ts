@@ -1,28 +1,36 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { ProjectTokenInfo } from './project-token-info.entity';
-import { SplTokenMetadata } from '@app/ss-common-domain/mint/entity/basic-metadata.entity';
-
-@Schema({
-  timestamps: true,
-})
-export class MintKeyPair {
-  @Prop()
-  mintPubKey: string;
-
-  @Prop()
-  mintPrivKey: string;
-}
 
 @Schema({
   timestamps: true,
 })
 export class ProjectToken {
   @Prop()
-  projectTokenInfo?: ProjectTokenInfo;
+  type: string;
 
   @Prop()
-  mintKeys?: MintKeyPair;
+  name: string;
 
   @Prop()
-  basicMetadata?: SplTokenMetadata;
+  symbol: string;
+
+  @Prop()
+  metadataUri?: string;
+
+  @Prop()
+  description: string;
+
+  @Prop()
+  supply: number;
+
+  @Prop()
+  mintPrivKey?: string;
+
+  @Prop()
+  mintPubKey: string;
+
+  @Prop()
+  mintAuthPrivKey: string;
+
+  @Prop()
+  mintAuthPubKey: string;
 }

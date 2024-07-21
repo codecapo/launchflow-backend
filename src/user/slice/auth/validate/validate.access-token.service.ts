@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GetAccessTokenService } from '../get/get.access-token.service';
+import { GetAccessTokenService } from '@app/ss-common-domain/user/auth/get.access-token.service';
 import { JwtService } from '@nestjs/jwt';
-import { IsTokenExpiredValue } from '@app/ss-common-domain/user/value/is-token-expired.vo';
+import { IsTokenExpiredValue } from '@app/ss-common-domain/user/base/value/is-token-expired.vo';
 
 @Injectable()
 export class ValidateAccessTokenService {

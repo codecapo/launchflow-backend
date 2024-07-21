@@ -28,7 +28,6 @@ import {
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptMint,
   MINT_SIZE,
-  mintTo,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { CreateMetadataService } from '@app/solana/metadata/create.metadata.service';
@@ -36,7 +35,7 @@ import { createCreateMetadataAccountV3Instruction } from '@metaplex-foundation/m
 
 @Injectable()
 export class SerialisedCreateMintTokenService {
-  private logger: Logger = new Logger();
+  private readonly logger: Logger = new Logger();
   private connection = new Connection(process.env.RPC_ENDPOINT);
 
   constructor(
@@ -283,20 +282,6 @@ export class SerialisedCreateMintTokenService {
 
     transaction.feePayer = backendDevWalletSigner.publicKey;
 
-    // const send = await this.connection.sendTransaction(transaction, [
-    //   nonceAccountAuthSigner,
-    //   backendDevWalletSigner,
-    //   mintAccountAuthoritySigner,
-    // ]);
-    //
-    // const confirm = await this.connection.confirmTransaction(send, 'finalized');
-    //
-    // if (confirm) {
-    //   return send;
-    // } else {
-    //   return;
-    // }
-
     transaction.partialSign(nonceAccountAuthSigner);
     transaction.partialSign(backendDevWalletSigner);
     transaction.partialSign(mintAccountAuthoritySigner);
@@ -328,6 +313,9 @@ export class SerialisedCreateMintTokenService {
     image: Express.Multer.File,
     createAndMintTokenRequest: CreateAndMintTokenRequest,
   ) {
+    this.logger.debug('#####################################');
+    this.logger.debug('Create Mint Token Started');
+
     //Upload and Create Metadata
     const createUploadMetadata =
       await this.createMetadataService.createAndPinMetadataForSplToken(
@@ -353,9 +341,6 @@ export class SerialisedCreateMintTokenService {
 
     //Public Keys
     const nonceAccountPubkey = new PublicKey(process.env.NONCE_ACCOUNT_PUB_KEY);
-    const mintToAddress = new PublicKey(
-      createAndMintTokenRequest.mintToPublishAddress,
-    );
 
     //Signers
     const nonceAccountAuthSigner: Signer = {
@@ -378,9 +363,13 @@ export class SerialisedCreateMintTokenService {
       secretKey: authority.secretKey,
     };
 
+    this.logger.debug('Keypairs Public Keys and Signers mapped');
+
     //Durable Nonce Instruction
-    const accountInfo =
-      await this.connection.getAccountInfo(nonceAccountPubkey);
+    const accountInfo = await this.connection.getAccountInfo(
+      nonceAccountPubkey,
+      'confirmed',
+    );
 
     const nonceAccount = NonceAccount.fromAccountData(accountInfo.data);
 
@@ -388,6 +377,8 @@ export class SerialisedCreateMintTokenService {
       noncePubkey: nonceAccountPubkey,
       authorizedPubkey: nonceAccountAuth.publicKey,
     });
+
+    this.logger.debug('Durable nonce created');
 
     // Create Token Instructions
 
@@ -435,6 +426,8 @@ export class SerialisedCreateMintTokenService {
         },
       );
 
+    this.logger.debug('Metadata instruction created');
+
     //Create Token Instruction
     const createTokenAccount = SystemProgram.createAccount({
       fromPubkey: backendWallet.publicKey,
@@ -444,6 +437,8 @@ export class SerialisedCreateMintTokenService {
       programId: TOKEN_PROGRAM_ID,
     });
 
+    this.logger.debug('Create Token instruction created');
+
     //Init Token Instruction
 
     const initMintTokenAccount = createInitializeMintInstruction(
@@ -452,6 +447,8 @@ export class SerialisedCreateMintTokenService {
       authority.publicKey,
       authority.publicKey,
     );
+
+    this.logger.debug('Init Mint Token instruction created');
 
     //MintTokenInstructions
 
@@ -471,6 +468,8 @@ export class SerialisedCreateMintTokenService {
         ASSOCIATED_TOKEN_PROGRAM_ID,
       );
 
+    this.logger.debug('Create associated token account instruction created');
+
     const num =
       BigInt(createAndMintTokenRequest.mintAmount) * BigInt(1_000_000_000);
 
@@ -481,6 +480,8 @@ export class SerialisedCreateMintTokenService {
       num, // amount. if your decimals is 8, you mint 10^8 for 1 token.
       9, // decimals
     );
+
+    this.logger.debug('Mint token instruction created');
 
     // Transaction
 
@@ -493,50 +494,33 @@ export class SerialisedCreateMintTokenService {
       mintTokens,
     );
 
-    // const send = await this.connection.sendTransaction(transaction, [
-    //   nonceAccountAuthSigner,
-    //   backendDevWalletSigner,
-    //   mintAuthoritySigner,
-    //   mintSigner,
-    // ]);
-    //
-    // const confirm = await this.connection.confirmTransaction(
-    //   send,
-    //   'confirmed',
-    // );
-    //
-    // if (confirm) {
-    //   const createAndMintSerialisedTransactionResponse: CreateAndMintTokenResponse =
-    //     {
-    //       mintPrivKey: base58.encode(mint.secretKey),
-    //       mintPubkey: mintSigner.publicKey.toBase58(),
-    //       mintAuthPrivKey: base58.encode(mintAuthoritySigner.secretKey),
-    //       mintAuthPubKey: mintSigner.publicKey.toBase58(),
-    //       serialisedTransaction: send,
-    //     };
-    //
-    //   return createAndMintSerialisedTransactionResponse;
-    // } else {
+    this.logger.debug('Create Mint Token transaction created');
+
+    transaction.recentBlockhash = nonceAccount.nonce;
+    transaction.feePayer = backendDevWalletSigner.publicKey;
+
     transaction.partialSign(nonceAccountAuthSigner);
     transaction.partialSign(backendDevWalletSigner);
     transaction.partialSign(mintAuthoritySigner);
     transaction.partialSign(mintSigner);
 
-    transaction.recentBlockhash = nonceAccount.nonce;
-    transaction.feePayer = backendDevWalletSigner.publicKey;
+    this.logger.debug('Transaction signed with prepared signers');
 
     const createAndMintSerialisedTransactionResponse: CreateAndMintTokenResponse =
       {
+        metadataUri: metadataData.uri,
         mintPrivKey: base58.encode(mint.secretKey),
         mintPubkey: mintSigner.publicKey.toBase58(),
         mintAuthPrivKey: base58.encode(mintAuthoritySigner.secretKey),
-        mintAuthPubKey: mintSigner.publicKey.toBase58(),
+        mintAuthPubKey: mintAuthoritySigner.publicKey.toBase58(),
         serialisedTransaction: base58.encode(
           transaction.serialize({ requireAllSignatures: false }),
         ),
       };
 
+    this.logger.debug('Transaction serialised and ready to send');
+    this.logger.debug('Create Mint Token Ended');
+    this.logger.debug('#####################################');
     return createAndMintSerialisedTransactionResponse;
-    //}
   }
 }

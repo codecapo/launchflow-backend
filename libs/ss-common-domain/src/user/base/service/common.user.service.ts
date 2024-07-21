@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CommonUserRepo } from '@app/ss-common-domain/user/repo/common.user.repo';
-import { User } from '@app/ss-common-domain/user/entity/user.entity';
+import { CommonUserRepo } from '@app/ss-common-domain/user/base/repo/common.user.repo';
+import { User } from '@app/ss-common-domain/user/base/entity/user.entity';
 
 @Injectable()
 export class CommonUserService {

@@ -25,7 +25,9 @@ import { MintModule } from './mint/mint.module';
 export class AppModule {
   private logger = new Logger('AppModule');
   constructor() {
-    this.logger.log(`Solana Stack is ${process.env.ENVIRONMENT}`);
+    this.logger.log(
+      `Solana Stack initialised with ${process.env.ENVIRONMENT} environment`,
+    );
     this.logger.log(
       `Solana Stack connected to ${process.env.CHAIN_ID} network`,
     );

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 
@@ -19,15 +20,19 @@ import {
 } from '@app/ss-common-domain/mint/dto/spl.dtos';
 import { SerialisedCreateMintTokenService } from '@app/solana';
 import { CreateNonceService } from '@app/solana/spl/create-nonce.service';
+import { SplCreateService } from '../service/spl.create.service';
+import { CreateMintTokenWithProjectInfoDto } from '@app/ss-common-domain/user/base/dto/create-mint-token-with-project-info.dto';
+import { AuthGuard } from '@app/ss-common-domain/user/auth/auth.guard';
 
-@Controller('spl')
-export class SplMintController {
+@Controller('spl/')
+export class SplCreateController {
   constructor(
     private readonly createNonceService: CreateNonceService,
     private readonly serialisedCreateMintTokenService: SerialisedCreateMintTokenService,
+    private readonly splCreateService: SplCreateService,
   ) {}
 
-  @Post('create/serialised')
+  @Post('token')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('file'))
   async createMintSplTokenSerialised(
@@ -56,12 +61,14 @@ export class SplMintController {
   }
 
   @Post('nonce/create')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async createNonceAccount() {
     return await this.createNonceService.createNonceAccount();
   }
 
   @Post('serialised/transaction/send')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async sendSerialisedTransaction(@Body() send: SendSerialisedTransaction) {
     return await this.serialisedCreateMintTokenService.sendSerialisedTransaction(
@@ -70,13 +77,14 @@ export class SplMintController {
   }
 
   @Post('create-mint')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('image'))
   async createAndMintTokenSerialised(
     @UploadedFile() image: Express.Multer.File,
     @Body() createMintToken: CreateAndMintTokenRequest,
-  ): Promise<CreateTokenSerialisedResponse> {
-    return await this.serialisedCreateMintTokenService.createAndMintSupplyToken(
+  ): Promise<CreateMintTokenWithProjectInfoDto> {
+    return await this.splCreateService.createAndMintToken(
       image,
       createMintToken,
     );

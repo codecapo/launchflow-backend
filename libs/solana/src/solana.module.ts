@@ -5,8 +5,8 @@ import { SolsUtils } from '@app/solana/utils/sols-utils.service';
 import { MetadataService } from '@app/solana/metadata/metadata.service';
 import { AwsModule } from '@app/aws';
 import { EncryptionService } from '@app/encryption';
-import { CreateMetadataService } from "@app/solana/metadata/create.metadata.service";
-import { CreateNonceService } from "@app/solana/spl/create-nonce.service";
+import { CreateMetadataService } from '@app/solana/metadata/create.metadata.service';
+import { CreateNonceService } from '@app/solana/spl/create-nonce.service';
 
 @Module({
   imports: [ConfigModule.forRoot(), AwsModule],

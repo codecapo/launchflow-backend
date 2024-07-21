@@ -1,4 +1,3 @@
-
 export class VerifySignInAuthRequestDto {
   // @Min(1, {
   //   message: 'Please provide a public key for wallet auth verification',
