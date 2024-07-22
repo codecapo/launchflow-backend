@@ -23,7 +23,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException({
-        error: 'Access token is invalid, please provide access token',
+        error: 'Access token is invalid',
       });
     }
 
@@ -36,16 +36,17 @@ export class AuthGuard implements CanActivate {
     const isMatch = token === get.accessToken;
 
     if (isMatch) {
-      this.logger.debug('User authenticated endpoint successfully');
       return true;
     } else {
       throw new UnauthorizedException({
-        message: 'Access token invalid please login to issue new access token',
+        error: 'Access token invalid please login to issue new access token',
+        status: 403,
       });
     }
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
+    console.log(request.headers);
     const [type, token] = request.headers['authorization']?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }

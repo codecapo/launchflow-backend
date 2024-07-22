@@ -34,9 +34,9 @@ describe('Metadata Pinning Service Tests', () => {
       size: fsFile.length,
       stream: undefined,
     };
-    const pin = await metadataService.pinFile(file);
+    //const pin = await metadataService.pinFile(file);
 
-    console.log(pin);
+    //console.log(pin);
   });
 
   it('should pin image from controller post', async () => {

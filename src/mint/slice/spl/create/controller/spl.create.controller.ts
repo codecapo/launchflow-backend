@@ -84,6 +84,7 @@ export class SplCreateController {
     @UploadedFile() image: Express.Multer.File,
     @Body() createMintToken: CreateAndMintTokenRequest,
   ): Promise<CreateMintTokenWithProjectInfoDto> {
+    console.log(createMintToken);
     return await this.splCreateService.createAndMintToken(
       image,
       createMintToken,

@@ -11,6 +11,7 @@ import {
   Signer,
   SystemProgram,
   Transaction,
+  TransactionInstruction,
 } from '@solana/web3.js';
 import {
   CreateAndMintTokenRequest,
@@ -22,9 +23,11 @@ import {
 } from '@app/ss-common-domain/mint/dto/spl.dtos';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  AuthorityType,
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
   createMintToCheckedInstruction,
+  createSetAuthorityInstruction,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptMint,
   MINT_SIZE,
@@ -408,6 +411,14 @@ export class SerialisedCreateMintTokenService {
       uses: null,
     };
 
+    let isMutableArgs: boolean;
+
+    if (createAndMintTokenRequest.unmodifiableMetadata) {
+      isMutableArgs = false;
+    } else {
+      isMutableArgs = true;
+    }
+
     const createMetadataAccountInstruction =
       createCreateMetadataAccountV3Instruction(
         {
@@ -421,7 +432,7 @@ export class SerialisedCreateMintTokenService {
           createMetadataAccountArgsV3: {
             collectionDetails: null,
             data: metadataData,
-            isMutable: true,
+            isMutable: isMutableArgs,
           },
         },
       );
@@ -485,14 +496,82 @@ export class SerialisedCreateMintTokenService {
 
     // Transaction
 
-    const transaction = new Transaction().add(
-      nonceAdvance,
-      createTokenAccount,
-      initMintTokenAccount,
-      createMetadataAccountInstruction,
-      createAssociatedTokenInstruction,
-      mintTokens,
-    );
+    let revokeFreezeAuthority: TransactionInstruction;
+    let revokeMintAuthority: TransactionInstruction;
+
+    if (createAndMintTokenRequest.revokeMintAuthority) {
+      revokeMintAuthority = createSetAuthorityInstruction(
+        mintSigner.publicKey, // mint acocunt || token account
+        authority.publicKey, // current auth
+        AuthorityType.MintTokens, // authority type
+        null, // new auth (you can pass `null` to close it)
+      );
+    }
+
+    if (createAndMintTokenRequest.revokeFreezeAuthority) {
+      revokeFreezeAuthority = createSetAuthorityInstruction(
+        mintSigner.publicKey, // mint acocunt || token account
+        authority.publicKey, // current auth
+        AuthorityType.FreezeAccount, // authority type
+        null, // new auth (you can pass `null` to close it)
+      );
+    }
+
+    let transaction: Transaction;
+
+    if (
+      createAndMintTokenRequest.revokeFreezeAuthority &&
+      !createAndMintTokenRequest.revokeFreezeAuthority
+    ) {
+      this.logger.debug('Revoking freeze authority');
+      transaction = new Transaction().add(
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        revokeFreezeAuthority,
+      );
+    } else if (
+      createAndMintTokenRequest.revokeMintAuthority &&
+      !createAndMintTokenRequest.revokeFreezeAuthority
+    ) {
+      this.logger.debug('Revoking mint authority');
+      transaction = new Transaction().add(
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        revokeMintAuthority,
+      );
+    } else if (
+      createAndMintTokenRequest.revokeMintAuthority &&
+      createAndMintTokenRequest.revokeFreezeAuthority
+    ) {
+      this.logger.debug('Revoking mint and freeze authority');
+      transaction = new Transaction().add(
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        revokeMintAuthority,
+        revokeFreezeAuthority,
+      );
+    } else {
+      transaction = new Transaction().add(
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+      );
+    }
 
     this.logger.debug('Create Mint Token transaction created');
 

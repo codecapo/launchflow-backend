@@ -53,6 +53,9 @@ export class CreateAndMintTokenRequest {
   symbol: string;
   description: string;
   mintAmount: number;
+  unmodifiableMetadata?: boolean;
+  revokeMintAuthority?: boolean;
+  revokeFreezeAuthority?: boolean;
 }
 
 export class CreateAndMintTokenResponse {

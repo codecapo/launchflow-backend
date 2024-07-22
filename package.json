@@ -23,6 +23,7 @@
     "@aws-crypto/client-node": "^4.0.0",
     "@aws-sdk/client-kms": "^3.574.0",
     "@aws-sdk/client-s3": "^3.583.0",
+    "@azure/web-pubsub": "^1.1.1",
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
     "@metaplex-foundation/umi": "^0.9.1",
     "@metaplex-foundation/umi-bundle-defaults": "^0.9.1",
