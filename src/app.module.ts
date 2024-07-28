@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { HttpModule } from '@nestjs/axios';
 import { MintModule } from './mint/mint.module';
+import { SsCommonDomainModule } from '@app/ss-common-domain';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MintModule } from './mint/mint.module';
     TerminusModule,
     HttpModule,
     MintModule,
+    SsCommonDomainModule,
   ],
   controllers: [AppController],
   providers: [AppService],
