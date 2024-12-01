@@ -36,7 +36,6 @@ export class SplCreateService {
       createMintToken.mintPrivKey,
     );
 
-    // updateUser the token
     const saveCreatedAndMintedToken: CreateMintTokenWithProjectInfoDto = {
       userWalletAddress: createAndMintTokenRequest.userWalletAddress,
       type: createAndMintTokenRequest.type,
@@ -49,7 +48,10 @@ export class SplCreateService {
       mintAuthPubKey: createMintToken.mintAuthPubKey,
       mintPrivKey: mintPrivKeyEncrypted,
       mintPubKey: createMintToken.mintPubkey,
-      serialisedTransaction: createMintToken.serialisedTransaction,
+      legacySerialisedTransaction: createMintToken.legacySerialisedTransaction,
+      versionedSerialisedTransaction:
+        createMintToken.versionedSerialisedTransaction,
+      addressLookupTableAccount: createMintToken.addressLookupTableAccount,
     };
 
     const updateUser =
@@ -63,9 +65,7 @@ export class SplCreateService {
         if (pt) return projectToken;
       });
 
-      console.log(createMintToken);
-
-      const saveCreatedAndMintedToken: CreateMintTokenWithProjectInfoDto = {
+      return {
         userWalletAddress: createAndMintTokenRequest.userWalletAddress,
         type: createdToken[0].type,
         name: createdToken[0].name,
@@ -77,10 +77,11 @@ export class SplCreateService {
         mintAuthPubKey: createdToken[0].mintAuthPubKey,
         mintPrivKey: createMintToken.mintPrivKey,
         mintPubKey: createdToken[0].mintPubKey,
-        serialisedTransaction: createMintToken.serialisedTransaction,
+        legacySerialisedTransaction:
+          createMintToken.legacySerialisedTransaction,
+        versionedSerialisedTransaction:
+          createMintToken.versionedSerialisedTransaction,
       };
-
-      return saveCreatedAndMintedToken;
     }
   }
 }

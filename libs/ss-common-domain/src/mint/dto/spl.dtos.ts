@@ -64,7 +64,9 @@ export class CreateAndMintTokenResponse {
   mintPubkey: string;
   mintAuthPrivKey: string;
   mintAuthPubKey: string;
-  serialisedTransaction: string;
+  legacySerialisedTransaction: string;
+  versionedSerialisedTransaction: string;
+  addressLookupTableAccount: string;
 }
 
 export class RevokeMintAuthorityResponse {

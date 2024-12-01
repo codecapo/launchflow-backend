@@ -7,6 +7,7 @@ import { AwsModule } from '@app/aws';
 import { EncryptionService } from '@app/encryption';
 import { CreateMetadataService } from '@app/solana/metadata/create.metadata.service';
 import { CreateNonceService } from '@app/solana/spl/create-nonce.service';
+import { AdminCreateMintTokenService } from '@app/solana/spl/admin-create-mint-token.service';
 
 @Module({
   imports: [ConfigModule.forRoot(), AwsModule],
@@ -17,6 +18,7 @@ import { CreateNonceService } from '@app/solana/spl/create-nonce.service';
     MetadataService,
     EncryptionService,
     CreateNonceService,
+    AdminCreateMintTokenService,
   ],
   exports: [
     SerialisedCreateMintTokenService,
@@ -25,6 +27,7 @@ import { CreateNonceService } from '@app/solana/spl/create-nonce.service';
     MetadataService,
     EncryptionService,
     CreateNonceService,
+    AdminCreateMintTokenService,
   ],
 })
 export class SolanaModule {}

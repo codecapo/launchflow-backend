@@ -4,14 +4,24 @@ import * as base58 from 'bs58';
 import { SolsUtils } from '@app/solana/utils/sols-utils.service';
 
 import {
+  AddressLookupTableAccount,
+  AddressLookupTableAccountArgs,
+  AddressLookupTableProgram,
+  Blockhash,
+  ComputeBudgetProgram,
   Connection,
   Keypair,
+  LAMPORTS_PER_SOL,
   NonceAccount,
   PublicKey,
+  SignaturePubkeyPair,
   Signer,
   SystemProgram,
   Transaction,
+  TransactionBlockhashCtor,
   TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
 } from '@solana/web3.js';
 import {
   CreateAndMintTokenRequest,
@@ -24,14 +34,18 @@ import {
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   AuthorityType,
+  createAssociatedTokenAccount,
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
   createMintToCheckedInstruction,
   createSetAuthorityInstruction,
+  createTransferCheckedInstruction,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptMint,
+  getOrCreateAssociatedTokenAccount,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
+  transferChecked,
 } from '@solana/spl-token';
 import { CreateMetadataService } from '@app/solana/metadata/create.metadata.service';
 import { createCreateMetadataAccountV3Instruction } from '@metaplex-foundation/mpl-token-metadata';
@@ -40,6 +54,7 @@ import { createCreateMetadataAccountV3Instruction } from '@metaplex-foundation/m
 export class SerialisedCreateMintTokenService {
   private readonly logger: Logger = new Logger();
   private connection = new Connection(process.env.RPC_ENDPOINT);
+  private transactionFee = process.env.PLATFORM_TRANSACTION_FEE;
 
   constructor(
     private readonly solsUtils: SolsUtils,
@@ -125,6 +140,8 @@ export class SerialisedCreateMintTokenService {
       uses: null,
     };
 
+    this.logger.debug('Metadata Instructions Created');
+
     const createTokenAccount = SystemProgram.createAccount({
       fromPubkey: backendWallet.publicKey,
       newAccountPubkey: mint.publicKey,
@@ -133,12 +150,16 @@ export class SerialisedCreateMintTokenService {
       programId: TOKEN_PROGRAM_ID,
     });
 
+    this.logger.debug('Create Token instruction Created');
+
     const initMintTokenAccount = createInitializeMintInstruction(
       mint.publicKey, // mint pubkey
       9,
       authority.publicKey,
       null,
     );
+
+    this.logger.debug('Init Mint Token Instruction Created');
 
     const createMetadataAccountInstruction =
       createCreateMetadataAccountV3Instruction(
@@ -221,7 +242,7 @@ export class SerialisedCreateMintTokenService {
       secretKey: mintAccountWallet.secretKey,
     };
 
-    const mintAccountAuthoritySigner: Signer = {
+    const mintAuthoritySigner: Signer = {
       publicKey: mintAuthKeyPair.publicKey,
       secretKey: mintAuthKeyPair.secretKey,
     };
@@ -250,8 +271,10 @@ export class SerialisedCreateMintTokenService {
 
     const ata = await getAssociatedTokenAddress(
       mintTokenAccountSigner.publicKey,
-      mintTo.publicKey,
+      mintAuthoritySigner.publicKey,
     );
+
+    this.logger.debug('Create associated token account instruction created');
 
     const createAssociatedTokenInstruction =
       createAssociatedTokenAccountInstruction(
@@ -263,6 +286,8 @@ export class SerialisedCreateMintTokenService {
         ASSOCIATED_TOKEN_PROGRAM_ID,
       );
 
+    this.logger.debug('Create associated token account instruction created');
+
     const num =
       BigInt(mintTokenSerialisedTransaction.mintTokenAmount) *
       BigInt(1_000_000_000);
@@ -270,11 +295,11 @@ export class SerialisedCreateMintTokenService {
     const mintTokens = createMintToCheckedInstruction(
       mintTokenAccountSigner.publicKey, // mint
       ata, // receiver (should be a token account)
-      mintAccountAuthoritySigner.publicKey, // mint authority
+      mintAuthoritySigner.publicKey, // mint authority
       num, // amount. if your decimals is 8, you mint 10^8 for 1 token.
       9, // decimals
-      // [signer1, signer2 ...], // only multisig account will use
     );
+
     const transaction = new Transaction().add(
       nonceAdvance,
       createAssociatedTokenInstruction,
@@ -287,7 +312,7 @@ export class SerialisedCreateMintTokenService {
 
     transaction.partialSign(nonceAccountAuthSigner);
     transaction.partialSign(backendDevWalletSigner);
-    transaction.partialSign(mintAccountAuthoritySigner);
+    transaction.partialSign(mintAuthoritySigner);
 
     const mintTokenResponse: MintTokenResponse = {
       transactionSignature: base58.encode(
@@ -295,6 +320,139 @@ export class SerialisedCreateMintTokenService {
       ),
     };
     return mintTokenResponse;
+  }
+
+  public async transferMintedTokenToAddress(
+    mintTokenAccountPrivKey: string,
+    mintAuthorityPrivateKey: string,
+    mintAmount: number,
+  ) {
+    const backendWallet = Keypair.fromSecretKey(
+      base58.decode(process.env.TEST_FRONTEND_PRIV_KEY),
+    );
+
+    const backendDevWalletSigner: Signer = {
+      publicKey: backendWallet.publicKey,
+      secretKey: backendWallet.secretKey,
+    };
+
+    console.log(backendDevWalletSigner.publicKey.toBase58());
+
+    const mintTokenKeyPair = Keypair.fromSecretKey(
+      base58.decode(mintTokenAccountPrivKey),
+    );
+
+    const mintAuthorityKeyPair = Keypair.fromSecretKey(
+      base58.decode(mintAuthorityPrivateKey),
+    );
+
+    const mintTokenAccountSigner: Signer = {
+      publicKey: mintTokenKeyPair.publicKey,
+      secretKey: mintTokenKeyPair.secretKey,
+    };
+
+    console.log(mintTokenAccountSigner.publicKey.toBase58());
+
+    const mintAccountAuthoritySigner: Signer = {
+      publicKey: mintAuthorityKeyPair.publicKey,
+      secretKey: mintAuthorityKeyPair.secretKey,
+    };
+
+    console.log(mintAccountAuthoritySigner.publicKey.toBase58());
+
+    const mintTokenATA = await getAssociatedTokenAddress(
+      mintTokenAccountSigner.publicKey,
+      mintAccountAuthoritySigner.publicKey,
+    );
+
+    this.logger.debug(`got mintTokenATA ${mintTokenATA}`);
+
+    const backendWalletATA = await getOrCreateAssociatedTokenAccount(
+      this.connection, // connection
+      backendDevWalletSigner, // fee payer
+      mintTokenAccountSigner.publicKey, // mint
+      mintAccountAuthoritySigner.publicKey, // owner,
+      false,
+      'confirmed',
+    );
+
+    this.logger.debug(
+      `got backendWalletATA ${backendWalletATA.mint} ${backendWalletATA.address}`,
+    );
+
+    // const createTokenAccountForTransferInstruction =
+    //   createAssociatedTokenAccountInstruction(
+    //     backendDevWalletSigner.publicKey, // payer
+    //     backendWalletATA.mint, // ata
+    //     mintAccountAuthoritySigner.publicKey, // owner
+    //     mintTokenAccountSigner.publicKey, // mint
+    //   );
+
+    //
+    // const ctor: TransactionBlockhashCtor = {
+    //   feePayer: backendDevWalletSigner.publicKey,
+    //   blockhash: recentbh.blockhash,
+    //   lastValidBlockHeight: recentbh.lastValidBlockHeight,
+    // };
+
+    // const createAta = new Transaction(ctor).add(
+    //   createTokenAccountForTransferInstruction,
+    // );
+
+    // const send = await this.connection.sendTransaction(createAta, [
+    //   backendDevWalletSigner,
+    // ]);
+
+    // const confirm = await this.connection.confirmTransaction(send);
+    //
+    // if (confirm) {
+    //   this.logger.debug('transaction confirmed');
+    // }
+
+    const num = BigInt(mintAmount) * BigInt(1_000_000_000);
+
+    const transferInstruction = await transferChecked(
+      this.connection,
+      backendDevWalletSigner,
+      mintTokenATA,
+      mintTokenAccountSigner.publicKey,
+      backendDevWalletSigner.publicKey,
+      mintAccountAuthoritySigner,
+      num,
+      9,
+    );
+
+    this.logger.debug(`send transaction ${transferInstruction}`);
+
+    return transferInstruction;
+
+    // const createTransferCheckedInst = createTransferCheckedInstruction(
+    //   mintTokenATA,
+    //   mintTokenAccountSigner.publicKey,
+    //   backendWalletATA.address,
+    //   mintAccountAuthoritySigner.publicKey,
+    //   num,
+    //   9,
+    // );
+    //
+    // const transaction = new Transaction().add(createTransferCheckedInst);
+    //
+    // const recentbh = await this.connection.getLatestBlockhash();
+    //
+    // transaction.recentBlockhash = recentbh.blockhash;
+    // transaction.feePayer = backendDevWalletSigner.publicKey;
+    //
+    // const simulate = await this.connection.simulateTransaction(transaction);
+    //
+    // this.logger.debug(simulate);
+    //
+    // transaction.sign(backendDevWalletSigner);
+    // //transaction.sign(mintTokenAccountSigner);
+    // transaction.sign(mintAccountAuthoritySigner);
+    //
+    // const serialisedTransaction = base58.encode(transaction.serialize());
+
+    // return { transactionSignature: serialisedTransaction };
   }
 
   public async sendSerialisedTransaction(serialisedTransaction: string) {
@@ -494,6 +652,12 @@ export class SerialisedCreateMintTokenService {
 
     this.logger.debug('Mint token instruction created');
 
+    const transferInstruction = SystemProgram.transfer({
+      fromPubkey: new PublicKey(createAndMintTokenRequest.userWalletAddress),
+      toPubkey: new PublicKey(process.env.FEE_COLLECTION_WALLET_PUBLIC_KEY),
+      lamports: 0.001 * LAMPORTS_PER_SOL,
+    });
+
     // Transaction
 
     let revokeFreezeAuthority: TransactionInstruction;
@@ -516,8 +680,38 @@ export class SerialisedCreateMintTokenService {
         null, // new auth (you can pass `null` to close it)
       );
     }
+    const setComputeUnitLimitInstruction =
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: 150_000,
+      });
+
+    const setComputeUnitPriceInstruction =
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 1,
+      });
 
     let transaction: Transaction;
+    let versionedTransactionInstructions: TransactionInstruction[];
+
+    const [lookupTableInstruction, lookupTableAddress] =
+      AddressLookupTableProgram.createLookupTable({
+        authority: backendDevWalletSigner.publicKey,
+        payer: backendDevWalletSigner.publicKey,
+        recentSlot: await this.connection.getSlot(),
+      });
+
+    const extendAddressLookupTableInstruction =
+      AddressLookupTableProgram.extendLookupTable({
+        payer: backendDevWalletSigner.publicKey,
+        authority: backendDevWalletSigner.publicKey,
+        lookupTable: lookupTableAddress,
+        addresses: [
+          nonceAccountAuthSigner.publicKey,
+          backendDevWalletSigner.publicKey,
+          mintAuthoritySigner.publicKey,
+          mintSigner.publicKey,
+        ],
+      });
 
     if (
       createAndMintTokenRequest.revokeFreezeAuthority &&
@@ -533,6 +727,18 @@ export class SerialisedCreateMintTokenService {
         mintTokens,
         revokeFreezeAuthority,
       );
+
+      versionedTransactionInstructions = [
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        revokeFreezeAuthority,
+        setComputeUnitLimitInstruction,
+        setComputeUnitPriceInstruction,
+      ];
     } else if (
       createAndMintTokenRequest.revokeMintAuthority &&
       !createAndMintTokenRequest.revokeFreezeAuthority
@@ -547,6 +753,18 @@ export class SerialisedCreateMintTokenService {
         mintTokens,
         revokeMintAuthority,
       );
+
+      versionedTransactionInstructions = [
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        revokeMintAuthority,
+        setComputeUnitLimitInstruction,
+        setComputeUnitPriceInstruction,
+      ];
     } else if (
       createAndMintTokenRequest.revokeMintAuthority &&
       createAndMintTokenRequest.revokeFreezeAuthority
@@ -561,7 +779,22 @@ export class SerialisedCreateMintTokenService {
         mintTokens,
         revokeMintAuthority,
         revokeFreezeAuthority,
+        transferInstruction,
       );
+
+      versionedTransactionInstructions = [
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        revokeMintAuthority,
+        revokeFreezeAuthority,
+        transferInstruction,
+        setComputeUnitLimitInstruction,
+        setComputeUnitPriceInstruction,
+      ];
     } else {
       transaction = new Transaction().add(
         nonceAdvance,
@@ -570,7 +803,20 @@ export class SerialisedCreateMintTokenService {
         createMetadataAccountInstruction,
         createAssociatedTokenInstruction,
         mintTokens,
+        transferInstruction,
       );
+
+      versionedTransactionInstructions = [
+        nonceAdvance,
+        createTokenAccount,
+        initMintTokenAccount,
+        createMetadataAccountInstruction,
+        createAssociatedTokenInstruction,
+        mintTokens,
+        transferInstruction,
+        setComputeUnitLimitInstruction,
+        setComputeUnitPriceInstruction,
+      ];
     }
 
     this.logger.debug('Create Mint Token transaction created');
@@ -585,6 +831,93 @@ export class SerialisedCreateMintTokenService {
 
     this.logger.debug('Transaction signed with prepared signers');
 
+    const getRecentBlockash =
+      await this.connection.getLatestBlockhash('finalized');
+
+    this.logger.debug('Starting create address look up transaction');
+
+    const createAddressLookUpTransaction = new TransactionMessage({
+      instructions: [lookupTableInstruction],
+      payerKey: backendDevWalletSigner.publicKey,
+      recentBlockhash: getRecentBlockash.blockhash,
+    });
+
+    const newCreateAddressLookUpTransaction = new VersionedTransaction(
+      createAddressLookUpTransaction.compileToV0Message(),
+    );
+
+    newCreateAddressLookUpTransaction.sign([backendDevWalletSigner]);
+
+    const createAddressLookUp = await this.connection.sendTransaction(
+      newCreateAddressLookUpTransaction,
+    );
+
+    this.logger.debug(
+      'Create address lookup transaction sig {}',
+      createAddressLookUp,
+    );
+
+    await this.connection.confirmTransaction(createAddressLookUp, 'finalized');
+
+    this.logger.debug('Started extending address look table transaction');
+
+    const extendAddressLookUpTransaction = new TransactionMessage({
+      instructions: [extendAddressLookupTableInstruction],
+      payerKey: backendDevWalletSigner.publicKey,
+      recentBlockhash: getRecentBlockash.blockhash,
+    });
+
+    const addressLookupTransaction = new VersionedTransaction(
+      extendAddressLookUpTransaction.compileToV0Message(),
+    );
+
+    addressLookupTransaction.sign([backendDevWalletSigner]);
+
+    this.logger.debug(
+      'Create addressLookupTransaction initialised and signed, sending transaction',
+    );
+
+    const sentCreateAddressLookUp = await this.connection.sendTransaction(
+      addressLookupTransaction,
+    );
+
+    await this.connection.confirmTransaction(
+      sentCreateAddressLookUp,
+      'finalized',
+    );
+
+    const getAddressLookupTable =
+      await this.connection.getAddressLookupTable(lookupTableAddress);
+
+    this.logger.debug('Sending addressLookupTransaction');
+
+    const lookupTableAccount = getAddressLookupTable.value;
+
+    console.log(lookupTableAccount.key.toBase58());
+
+    const messageV0 = new TransactionMessage({
+      instructions: versionedTransactionInstructions,
+      payerKey: backendDevWalletSigner.publicKey,
+      recentBlockhash: nonceAccount.nonce,
+    });
+
+    const addressTableLookupArgs: AddressLookupTableAccountArgs = {
+      key: lookupTableAccount.key,
+      state: lookupTableAccount.state,
+    };
+
+    const loadedAddresses = messageV0
+      .compileToV0Message()
+      .resolveAddressTableLookups([lookupTableAccount]);
+
+    console.log('loadedAddresses', loadedAddresses);
+
+    messageV0
+      .compileToV0Message([
+        new AddressLookupTableAccount(addressTableLookupArgs),
+      ])
+      .serialize();
+
     const createAndMintSerialisedTransactionResponse: CreateAndMintTokenResponse =
       {
         metadataUri: metadataData.uri,
@@ -592,9 +925,13 @@ export class SerialisedCreateMintTokenService {
         mintPubkey: mintSigner.publicKey.toBase58(),
         mintAuthPrivKey: base58.encode(mintAuthoritySigner.secretKey),
         mintAuthPubKey: mintAuthoritySigner.publicKey.toBase58(),
-        serialisedTransaction: base58.encode(
+        legacySerialisedTransaction: base58.encode(
           transaction.serialize({ requireAllSignatures: false }),
         ),
+        versionedSerialisedTransaction: base58.encode(
+          messageV0.compileToV0Message().serialize(),
+        ),
+        addressLookupTableAccount: lookupTableAccount.key.toBase58(),
       };
 
     this.logger.debug('Transaction serialised and ready to send');

@@ -8,7 +8,7 @@ import * as crypto from 'node:crypto';
 
 @Injectable()
 export class CreateMetadataService {
-  private readonly logger: Logger = new Logger();
+  private readonly logger: Logger = new Logger(CreateMetadataService.name);
 
   constructor(private readonly metadataService: MetadataService) {}
 
@@ -18,6 +18,7 @@ export class CreateMetadataService {
     tokenSymbol: string,
     tokenDescription: string,
   ) {
+
     const pinAuth = await this.metadataService.verifyPinAuth();
 
     if (!pinAuth)

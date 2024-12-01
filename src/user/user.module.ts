@@ -34,6 +34,8 @@ import {
   User,
   UserSchema,
 } from '@app/ss-common-domain/user/base/entity/user.entity';
+import { UpdateUserService } from './slice/manage/update/update.user.service';
+import { UpdateUserRepo } from './slice/manage/update/update.user.repo';
 
 @Module({
   imports: [
@@ -75,6 +77,8 @@ import {
     GetSignInRequestRepo,
     RevokeAccessTokenService,
     RevokeAccessTokenRepo,
+    UpdateUserService,
+    UpdateUserRepo,
   ],
   controllers: [UserController],
   exports: [JwtModule, ManageUserAuthService],

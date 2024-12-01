@@ -11,5 +11,11 @@ import {
 export class UpdateUserRepo {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async update() {}
+  async addUCI(walletAddress: string, uci: string) {
+    await this.userModel.updateOne({publicKey: walletAddress}, {
+      $push: {
+        uci: uci,
+      },
+    })
+  }
 }

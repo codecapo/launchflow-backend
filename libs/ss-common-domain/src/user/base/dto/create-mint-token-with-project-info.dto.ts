@@ -10,5 +10,19 @@ export interface CreateMintTokenWithProjectInfoDto {
   mintPubKey: string;
   mintAuthPrivKey: string;
   mintAuthPubKey: string;
-  serialisedTransaction?: string;
+  legacySerialisedTransaction?: string;
+  versionedSerialisedTransaction?: string;
+  addressLookupTableAccount?: string;
+}
+
+
+export class TransferMintedTokensRequest {
+  mintTokenAccountPrivKey: string;
+  mintAuthorityPrivateKey: string;
+  mintAmount: number;
+}
+
+export interface serialisedTransferMintTokenResponse {
+  amount: number;
+  transactionSignature: string;
 }

@@ -39,7 +39,7 @@ export class SplCreateRepo {
     );
 
     if (res.modifiedCount >= 1) {
-      this.logger.log('Token updated on user profile', res.modifiedCount);
+      this.logger.log(`Token updated on user profile ${res.modifiedCount}`);
       return this.userModel.findOne({
         publicKey: createMintTokenWithProjectInfoDto.userWalletAddress,
       });

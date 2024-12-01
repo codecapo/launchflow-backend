@@ -21,18 +21,23 @@ import {
 import { SerialisedCreateMintTokenService } from '@app/solana';
 import { CreateNonceService } from '@app/solana/spl/create-nonce.service';
 import { SplCreateService } from '../service/spl.create.service';
-import { CreateMintTokenWithProjectInfoDto } from '@app/ss-common-domain/user/base/dto/create-mint-token-with-project-info.dto';
+import {
+  CreateMintTokenWithProjectInfoDto,
+  TransferMintedTokensRequest,
+} from '@app/ss-common-domain/user/base/dto/create-mint-token-with-project-info.dto';
 import { AuthGuard } from '@app/ss-common-domain/user/auth/auth.guard';
+import { AdminCreateMintTokenService } from '@app/solana/spl/admin-create-mint-token.service';
 
-@Controller('spl/')
+@Controller('spl')
 export class SplCreateController {
   constructor(
     private readonly createNonceService: CreateNonceService,
     private readonly serialisedCreateMintTokenService: SerialisedCreateMintTokenService,
+    private readonly adminCreateMintTokens: AdminCreateMintTokenService,
     private readonly splCreateService: SplCreateService,
   ) {}
 
-  @Post('token')
+  @Post('serialised/create-token')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('file'))
   async createMintSplTokenSerialised(
@@ -50,7 +55,7 @@ export class SplCreateController {
     );
   }
 
-  @Post('mint/serialised')
+  @Post('serialised/mint')
   @HttpCode(HttpStatus.OK)
   async mintSplTokenSerialised(
     @Body() mintTokenSerialised: MintTokenSerialised,
@@ -60,8 +65,21 @@ export class SplCreateController {
     );
   }
 
-  @Post('nonce/create')
+  @Post('serialised/transfer')
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async transferMintToken(
+    @Body() transferMintedTokensRequest: TransferMintedTokensRequest,
+  ) {
+    return await this.serialisedCreateMintTokenService.transferMintedTokenToAddress(
+      transferMintedTokensRequest.mintTokenAccountPrivKey,
+      transferMintedTokensRequest.mintAuthorityPrivateKey,
+      transferMintedTokensRequest.mintAmount,
+    );
+  }
+
+  @Post('nonce/create')
+  //@UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async createNonceAccount() {
     return await this.createNonceService.createNonceAccount();
@@ -88,6 +106,24 @@ export class SplCreateController {
     return await this.splCreateService.createAndMintToken(
       image,
       createMintToken,
+    );
+  }
+
+  @Post('admin/create-mint')
+  @HttpCode(HttpStatus.OK)
+  //@UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  async adminCreateMint(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() createAndMintTokenRequest: CreateAndMintTokenRequest,
+  ) {
+    console.log('image', image);
+
+    console.log(createAndMintTokenRequest);
+
+    return await this.adminCreateMintTokens.createMintTokens(
+      createAndMintTokenRequest,
+      image,
     );
   }
 }

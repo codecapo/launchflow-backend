@@ -50,7 +50,7 @@ export class ManageUserAuthService {
       statement: 'Solana Stack wants to sign you in using your wallet',
       version: '1',
       nonce: generatedNounce,
-      chainId: 'devnet',
+      chainId: process.env.CHAIN_ID,
       issuedAt: currentDateTime,
       requestId: crypto.randomUUID(),
     };

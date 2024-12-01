@@ -11,6 +11,8 @@ import {
 import { MetadataController } from './slice/metadata/controller/metadata.controller';
 import { EncryptionModule } from '@app/encryption';
 import { SplCreateService } from './slice/spl/create/service/spl.create.service';
+import { SplManageController } from './slice/spl/manage/spl.manage.controller';
+import { SplManageService } from './slice/spl/manage/spl.manage.service';
 
 @Module({
   imports: [
@@ -19,8 +21,8 @@ import { SplCreateService } from './slice/spl/create/service/spl.create.service'
     SsCommonDomainModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
-  providers: [SplCreateRepo, SplCreateService],
-  controllers: [SplCreateController, MetadataController],
-  exports: [SplCreateRepo, SplCreateService],
+  providers: [SplCreateRepo, SplCreateService, SplManageService],
+  controllers: [SplCreateController, MetadataController, SplManageController],
+  exports: [SplCreateRepo, SplCreateService, SplManageService],
 })
 export class MintModule {}
