@@ -13,6 +13,8 @@ import {
   BurnTokenRequest,
   RevokeFreezeAuthorityRequest,
   RevokeFreezeAuthorityResponse,
+  RevokeMetadataUpdateRequest,
+  RevokeMetadataUpdateResponse,
   RevokeMintAuthorityRequest,
   RevokeUpdateAuthorityRequest,
   RevokeUpdateAuthorityResponse,
@@ -513,4 +515,188 @@ export class SplManageService {
       transaction.serialize({ requireAllSignatures: false }),
     );
   }
+
+  public async revokeMetadataUpdateAuthority(
+    revokeMetadataUpdateRequest: RevokeMetadataUpdateRequest,
+  ): Promise<RevokeMetadataUpdateResponse> {
+    try {
+      // Input validation
+      if (
+        !revokeMetadataUpdateRequest.mintPubKey ||
+        !revokeMetadataUpdateRequest.currentUpdateAuthPubKey
+      ) {
+        throw new Error(
+          'Missing required parameters: mintPubKey or currentUpdateAuthPubKey',
+        );
+      }
+
+      // Create public keys
+      const mintTokenPublicKey = new PublicKey(
+        revokeMetadataUpdateRequest.mintPubKey,
+      );
+
+      const currentAuthorityPublicKey = new PublicKey(
+        revokeMetadataUpdateRequest.currentUpdateAuthPubKey,
+      );
+
+      // Derive metadata account address
+      const [metadataAddress] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('metadata'),
+          TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+          mintTokenPublicKey.toBuffer(),
+        ],
+        TOKEN_METADATA_PROGRAM_ID,
+      );
+
+      // Get current metadata account info
+      const metadataAccount =
+        await this.connection.getAccountInfo(metadataAddress);
+      if (!metadataAccount) {
+        throw new Error('Metadata account not found');
+      }
+
+      // Deserialize the metadata account
+      const currentMetadata = Metadata.deserialize(metadataAccount.data)[0];
+
+      console.log('Current Metadata:', currentMetadata);
+
+      // Verify current update authority
+      if (
+        currentMetadata.updateAuthority.toBase58() !==
+        currentAuthorityPublicKey.toBase58()
+      ) {
+        throw new Error(
+          'Provided update authority does not match current metadata update authority',
+        );
+      }
+
+      if (!revokeMetadataUpdateRequest.currentUpdateAuthPrivKey) {
+        throw new Error(
+          'Current update authority private key is required for signing',
+        );
+      }
+
+      // Create the current authority keypair
+      const currentAuthority = Keypair.fromSecretKey(
+        base58.decode(revokeMetadataUpdateRequest.currentUpdateAuthPrivKey),
+      );
+
+      // Get latest blockhash
+      const { blockhash, lastValidBlockHeight } =
+        await this.connection.getLatestBlockhash('finalized');
+
+      // Prepare the data for the update
+      const dataV2: DataV2 = {
+        name: currentMetadata.data.name,
+        symbol: currentMetadata.data.symbol,
+        uri: currentMetadata.data.uri,
+        sellerFeeBasisPoints: currentMetadata.data.sellerFeeBasisPoints,
+        creators: currentMetadata.data.creators,
+        collection: currentMetadata.collection,
+        uses: currentMetadata.uses,
+      };
+
+      // Create the instruction to update metadata
+      const updateMetadataInstruction =
+        createUpdateMetadataAccountV2Instruction(
+          {
+            metadata: metadataAddress,
+            updateAuthority: currentAuthorityPublicKey,
+          },
+          {
+            updateMetadataAccountArgsV2: {
+              data: dataV2,
+              updateAuthority: null, // Setting to null revokes the authority
+              primarySaleHappened: currentMetadata.primarySaleHappened,
+              isMutable: currentMetadata.isMutable,
+            },
+          },
+        );
+
+      // Create and setup transaction
+      const transaction = new Transaction();
+      transaction.add(updateMetadataInstruction);
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = currentAuthority.publicKey;
+      transaction.sign(currentAuthority);
+
+      this.logger.debug('Transaction created and signed by current authority');
+
+      // Send transaction with retries
+      const maxRetries = 5;
+      let currentTry = 0;
+      let send: string;
+
+      while (currentTry < maxRetries) {
+        try {
+          send = await this.connection.sendTransaction(
+            transaction,
+            [currentAuthority],
+            {
+              skipPreflight: false,
+              preflightCommitment: 'finalized',
+              maxRetries: 3,
+            },
+          );
+
+          this.logger.debug(`Transaction sent with signature: ${send}`);
+
+          // Wait for confirmation
+          const confirmation = await this.connection.confirmTransaction(
+            {
+              signature: send,
+              blockhash: blockhash,
+              lastValidBlockHeight: lastValidBlockHeight,
+            },
+            'finalized',
+          );
+
+          if (!confirmation?.value?.err) {
+            const response: RevokeMetadataUpdateResponse = {
+              transactionSignature: send,
+            };
+
+            this.logger.log(
+              `Metadata Update Authority Revoked for ${revokeMetadataUpdateRequest.mintPubKey}`,
+            );
+
+            return response;
+          }
+
+          break;
+        } catch (error) {
+          currentTry++;
+          if (currentTry === maxRetries) {
+            throw new Error(
+              `Failed after ${maxRetries} attempts: ${error.message}`,
+            );
+          }
+
+          // Wait before retrying
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * currentTry),
+          );
+
+          // Get new blockhash for retry
+          const { blockhash: newBlockhash, lastValidBlockHeight: newHeight } =
+            await this.connection.getLatestBlockhash('finalized');
+          transaction.recentBlockhash = newBlockhash;
+
+          this.logger.debug(
+            `Retrying transaction (attempt ${currentTry + 1}/${maxRetries})`,
+          );
+        }
+      }
+
+      throw new Error('Transaction failed after all retry attempts');
+    } catch (error) {
+      this.logger.error(
+        `Failed to revoke metadata update authority: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  // Interface definitions
 }

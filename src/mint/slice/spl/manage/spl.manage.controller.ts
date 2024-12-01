@@ -2,10 +2,10 @@ import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { SplManageService } from './spl.manage.service';
 import {
   BurnTokenRequest,
-  RevokeFreezeAuthorityRequest,
+  RevokeFreezeAuthorityRequest, RevokeMetadataUpdateRequest,
   RevokeMintAuthorityRequest,
-  RevokeUpdateAuthorityRequest,
-} from './spl.manage.dto';
+  RevokeUpdateAuthorityRequest
+} from "./spl.manage.dto";
 
 @Controller('spl')
 export class SplManageController {
@@ -53,6 +53,21 @@ export class SplManageController {
     try {
       return await this.manageTokenService.revokeUpdateAuthority(
         revokeUpdateAuthority,
+      );
+    } catch (error) {
+      throw new BadRequestException({
+        message: 'Could not revoke FreezeAuthority',
+      });
+    }
+  }
+
+  @Post('admin/revoke-update-token-metadata-authority')
+  async revokeUpdateTokenMetadataAuthority(
+    @Body() revokeMetadataUpdateRequest: RevokeMetadataUpdateRequest,
+  ) {
+    try {
+      return await this.manageTokenService.revokeMetadataUpdateAuthority(
+        revokeMetadataUpdateRequest,
       );
     } catch (error) {
       throw new BadRequestException({

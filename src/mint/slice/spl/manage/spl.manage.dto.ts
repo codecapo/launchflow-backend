@@ -36,3 +36,13 @@ export interface RevokeUpdateAuthorityRequest {
 export interface RevokeUpdateAuthorityResponse {
   transactionSignature: string;
 }
+
+export interface RevokeMetadataUpdateRequest {
+  mintPubKey: string;
+  currentUpdateAuthPubKey: string;
+  currentUpdateAuthPrivKey: string;
+}
+
+export interface RevokeMetadataUpdateResponse {
+  transactionSignature: string;
+}
