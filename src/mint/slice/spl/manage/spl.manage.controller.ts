@@ -1,19 +1,31 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { SplManageService } from './spl.manage.service';
 import {
-  BurnTokenRequest,
-  RevokeFreezeAuthorityRequest, RevokeMetadataUpdateRequest,
+  RevokeFreezeAuthorityRequest,
+  RevokeMetadataUpdateRequest,
   RevokeMintAuthorityRequest,
-  RevokeUpdateAuthorityRequest
-} from "./spl.manage.dto";
+  RevokeUpdateAuthorityRequest,
+} from './spl.manage.dto';
+
+interface BurnRaydiumTokens {
+  lpMint: string;
+  lpTokenAccount: string;
+  amountToBurn: number;
+}
 
 @Controller('spl')
 export class SplManageController {
   constructor(private readonly manageTokenService: SplManageService) {}
 
   @Post('admin/burn-tokens')
-  async burnToken(@Body() burnTokenRequest: BurnTokenRequest) {
-    await this.manageTokenService.burnToken(burnTokenRequest);
+  async burnToken(@Body() burnRaydiumTokens: BurnRaydiumTokens) {
+    console.log(burnRaydiumTokens);
+
+    await this.manageTokenService.burnRaydiumLPToken(
+      burnRaydiumTokens.lpMint,
+      burnRaydiumTokens.lpTokenAccount,
+      burnRaydiumTokens.amountToBurn,
+    );
   }
 
   @Post('admin/revoke-mint-authority')

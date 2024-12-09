@@ -10,7 +10,6 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import { SolsUtils } from '@app/solana/utils/sols-utils.service';
 import {
-  BurnTokenRequest,
   RevokeFreezeAuthorityRequest,
   RevokeFreezeAuthorityResponse,
   RevokeMetadataUpdateRequest,
@@ -24,6 +23,8 @@ import {
   DataV2,
   Metadata,
   PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID,
+  UpdateMetadataAccountV2InstructionAccounts,
+  UpdateMetadataAccountV2InstructionArgs,
 } from '@metaplex-foundation/mpl-token-metadata';
 
 @Injectable()
@@ -322,10 +323,11 @@ export class SplManageService {
       // Input validation
       if (
         !revokeUpdateAuthorityRequest.mintPubKey ||
-        !revokeUpdateAuthorityRequest.currentUpdateAuthPubKey
+        !revokeUpdateAuthorityRequest.currentUpdateAuthPubKey ||
+        !revokeUpdateAuthorityRequest.feePayerPrivKey // Add fee payer validation
       ) {
         throw new Error(
-          'Missing required parameters: mintPubKey or currentUpdateAuthPubKey',
+          'Missing required parameters: mintPubKey, currentUpdateAuthPubKey, or feePayerPrivKey',
         );
       }
 
@@ -336,6 +338,11 @@ export class SplManageService {
 
       const currentAuthorityPublicKey = new PublicKey(
         revokeUpdateAuthorityRequest.currentUpdateAuthPubKey,
+      );
+
+      // Create fee payer keypair
+      const feePayer = Keypair.fromSecretKey(
+        base58.decode(revokeUpdateAuthorityRequest.feePayerPrivKey),
       );
 
       // Get metadata PDA
@@ -358,8 +365,10 @@ export class SplManageService {
       // Decode metadata
       const metadata = Metadata.deserialize(metadataAccount.data)[0];
 
-      console.log('metadata');
-      console.log(metadata);
+      this.logger.debug('Metadata found:', {
+        updateAuthority: metadata.updateAuthority.toBase58(),
+        currentAuthority: currentAuthorityPublicKey.toBase58(),
+      });
 
       // Verify the provided authority matches the actual update authority
       if (!metadata.updateAuthority.equals(currentAuthorityPublicKey)) {
@@ -379,42 +388,61 @@ export class SplManageService {
         base58.decode(revokeUpdateAuthorityRequest.currentUpdateAuthPrivKey),
       );
 
-      // Get latest blockhash with commitment
-      const { blockhash, lastValidBlockHeight } =
-        await this.connection.getLatestBlockhash('finalized');
+      // Create instruction to remove update authority
+      const updateMetadataAccount: UpdateMetadataAccountV2InstructionAccounts =
+        {
+          metadata: metadataAddress,
+          updateAuthority: currentAuthorityPublicKey,
+        };
 
-      // Convert metadata.data to DataV2 format
-      const dataV2: DataV2 = {
-        ...metadata.data,
+      // Format the data exactly as it appears in the current metadata
+      const dataV2 = {
+        name: metadata.data.name,
+        symbol: metadata.data.symbol,
+        uri: metadata.data.uri,
+        sellerFeeBasisPoints: metadata.data.sellerFeeBasisPoints,
+        creators: metadata.data.creators || null,
         collection: metadata.collection || null,
         uses: metadata.uses || null,
       };
 
-      // Create the instruction to update metadata
-      const updateMetadataInstruction =
-        createUpdateMetadataAccountV2Instruction(
-          {
-            metadata: metadataAddress,
-            updateAuthority: currentAuthorityPublicKey,
-          },
-          {
-            updateMetadataAccountArgsV2: {
-              data: dataV2,
-              updateAuthority: null, // Set to null to revoke
-              primarySaleHappened: metadata.primarySaleHappened,
-              isMutable: metadata.isMutable,
-            },
-          },
-        );
+      // Create update args maintaining exact state except for update authority
+      const updateMetadataArgs: UpdateMetadataAccountV2InstructionArgs = {
+        updateMetadataAccountArgsV2: {
+          data: dataV2,
+          updateAuthority: undefined, // try undefined instead
+          primarySaleHappened: false,
+          isMutable: false,
+        },
+      };
+
+      this.logger.debug(
+        'Update metadata args:',
+        JSON.stringify(updateMetadataArgs, null, 2),
+      );
+
+      const removeUpdateAuthorityIx = createUpdateMetadataAccountV2Instruction(
+        updateMetadataAccount,
+        updateMetadataArgs,
+      );
 
       // Create and setup transaction
       const transaction = new Transaction();
-      transaction.add(updateMetadataInstruction);
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = currentAuthority.publicKey;
-      transaction.sign(currentAuthority);
+      transaction.add(removeUpdateAuthorityIx);
 
-      this.logger.debug('Transaction created and signed by current authority');
+      // Get latest blockhash with commitment
+      const { blockhash, lastValidBlockHeight } =
+        await this.connection.getLatestBlockhash('confirmed');
+
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = feePayer.publicKey; // Use dedicated fee payer
+
+      // Sign with both fee payer and update authority
+      transaction.sign(feePayer, currentAuthority);
+
+      this.logger.debug(
+        'Transaction created and signed by fee payer and current authority',
+      );
 
       // Send transaction with retries
       const maxRetries = 5;
@@ -425,10 +453,10 @@ export class SplManageService {
         try {
           send = await this.connection.sendTransaction(
             transaction,
-            [currentAuthority],
+            [feePayer, currentAuthority], // Include both signers
             {
               skipPreflight: false,
-              preflightCommitment: 'finalized',
+              preflightCommitment: 'confirmed',
               maxRetries: 3,
             },
           );
@@ -442,7 +470,7 @@ export class SplManageService {
               blockhash: blockhash,
               lastValidBlockHeight: lastValidBlockHeight,
             },
-            'finalized',
+            'confirmed',
           );
 
           if (!confirmation?.value?.err) {
@@ -473,7 +501,7 @@ export class SplManageService {
 
           // Get new blockhash for retry
           const { blockhash: newBlockhash, lastValidBlockHeight: newHeight } =
-            await this.connection.getLatestBlockhash('finalized');
+            await this.connection.getLatestBlockhash('confirmed');
           transaction.recentBlockhash = newBlockhash;
 
           this.logger.debug(
@@ -489,31 +517,54 @@ export class SplManageService {
     }
   }
 
-  public async burnToken(burnTokenRequest: BurnTokenRequest) {
-    const tokenAccountPublicKey = new PublicKey(
-      burnTokenRequest.tokenAccountPubkey,
-    );
-    const mintTokenPublicKey = new PublicKey(burnTokenRequest.mintPubKey);
-    const mintAuthority = new PublicKey(burnTokenRequest.mintAuthPubKey);
-    const num = BigInt(burnTokenRequest.burnAmount) * BigInt(1_000_000_000);
+  public async burnRaydiumLPToken(
+    lpMint: string,
+    lpTokenAccount: string,
+    amountToBurn: number,
+  ) {
+    const burnAmmountLamports = Math.round(amountToBurn * 1e9);
+    const lpMintPubKey = new PublicKey(lpMint);
+    const lpTokenAccountPubKey = new PublicKey(lpTokenAccount);
 
-    const burn = createBurnCheckedInstruction(
-      tokenAccountPublicKey,
-      mintTokenPublicKey,
-      mintAuthority,
-      num,
+    const { blockhash, lastValidBlockHeight } =
+      await this.connection.getLatestBlockhash();
+
+    const wallet = Keypair.fromSecretKey(
+      base58.decode(
+        //'5PWamhnis6W7oNFtnfQGsnP5JFE7ptKJr3dLbPXFpECEAuyyHkZjLMGgWngWU3mugUL7CtczrSc61rZXPXRuxi1x',
+        '3q2YxLx4ZD1kUW9PqdFDPCWtPyB3hrqVCbAEioJydh8PbwYjC4ULnbdvzjrkCc56EGQqPUvkZymAnHRgGy58qS8X',
+      ),
+    );
+
+    console.log(wallet.publicKey.toBase58());
+
+    const burnInstruction = createBurnCheckedInstruction(
+      lpTokenAccountPubKey,
+      lpMintPubKey,
+      wallet.publicKey,
+      burnAmmountLamports,
       9,
     );
 
-    const transaction = new Transaction().add(burn);
+    const transaction = new Transaction();
+    transaction.recentBlockhash = blockhash;
+    transaction.add(burnInstruction);
+    transaction.feePayer = wallet.publicKey;
 
-    this.logger.log(
-      `Burning ${burnTokenRequest.burnAmount} Tokens for ${burnTokenRequest.tokenAccountPubkey}`,
-    );
+    const signature = await this.connection.sendTransaction(transaction, [
+      wallet,
+    ]);
 
-    return base58.encode(
-      transaction.serialize({ requireAllSignatures: false }),
-    );
+    console.log('Transaction signature: ', signature);
+
+    const confirmationStrategy = {
+      signature,
+      blockhash,
+      lastValidBlockHeight,
+    };
+
+    await this.connection.confirmTransaction(confirmationStrategy, 'processed');
+    return signature;
   }
 
   public async revokeMetadataUpdateAuthority(

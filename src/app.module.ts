@@ -8,7 +8,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { HttpModule } from '@nestjs/axios';
 import { MintModule } from './mint/mint.module';
 import { SsCommonDomainModule } from '@app/ss-common-domain';
-import { Connection } from "@solana/web3.js";
+import { Connection } from '@solana/web3.js';
 
 @Module({
   imports: [
@@ -28,9 +28,6 @@ import { Connection } from "@solana/web3.js";
 export class AppModule {
   private logger = new Logger('AppModule');
   constructor() {
-    this.logger.log(
-      `Solana Stack initialised with ${process.env.ENVIRONMENT} environment`,
-    );
     this.logger.log(
       `Solana Stack connected to ${process.env.CHAIN_ID} network`,
     );

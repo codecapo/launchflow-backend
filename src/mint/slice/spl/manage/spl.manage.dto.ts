@@ -31,6 +31,7 @@ export interface RevokeUpdateAuthorityRequest {
   mintPubKey: string;
   currentUpdateAuthPubKey: string;
   currentUpdateAuthPrivKey: string;
+  feePayerPrivKey: string;
 }
 
 export interface RevokeUpdateAuthorityResponse {

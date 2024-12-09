@@ -15,7 +15,9 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
-  createMintToCheckedInstruction,
+  createMintToInstruction,
+  createSetAuthorityInstruction,
+  AuthorityType,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptMint,
   MINT_SIZE,
@@ -40,7 +42,7 @@ export class AdminCreateMintTokenService {
   ) {
     this.logger.debug('#####################################');
     this.logger.debug('Create Mint Token Started');
-    //Upload and Create Metadata
+
     const createUploadMetadataResponse =
       await this.createMetadataService.createAndPinMetadataForSplToken(
         image,
@@ -54,8 +56,7 @@ export class AdminCreateMintTokenService {
       base58.decode(chosenBackendDevWallet.privKey),
     );
 
-    //Keypairs
-
+    // Keypairs
     const mint = Keypair.generate();
     const authority = Keypair.generate();
 
@@ -63,10 +64,10 @@ export class AdminCreateMintTokenService {
       base58.decode(process.env.NONCE_ACCOUNT_AUTH_PRIV_KEY),
     );
 
-    //Public Keys
+    // Public Keys
     const nonceAccountPubkey = new PublicKey(process.env.NONCE_ACCOUNT_PUB_KEY);
 
-    //Signers
+    // Signers
     const nonceAccountAuthSigner: Signer = {
       publicKey: nonceAccountAuth.publicKey,
       secretKey: nonceAccountAuth.secretKey,
@@ -89,7 +90,7 @@ export class AdminCreateMintTokenService {
 
     this.logger.debug('Keypairs Public Keys and Signers mapped');
 
-    //Durable Nonce Instruction
+    // Durable Nonce Instruction
     const accountInfo = await this.connection.getAccountInfo(
       nonceAccountPubkey,
       'confirmed',
@@ -157,7 +158,7 @@ export class AdminCreateMintTokenService {
 
     this.logger.debug('Metadata instruction created');
 
-    //Create Token Instruction
+    // Create Token Account
     const createTokenAccount = SystemProgram.createAccount({
       fromPubkey: backendWallet.publicKey,
       newAccountPubkey: mint.publicKey,
@@ -166,22 +167,19 @@ export class AdminCreateMintTokenService {
       programId: TOKEN_PROGRAM_ID,
     });
 
-    this.logger.debug('Create Token instruction created');
+    this.logger.debug('Create Token account instruction created');
 
-    //Init Token Instruction
-
-    const initMintTokenAccount = createInitializeMintInstruction(
-      mint.publicKey, // mint pubkey
-      9,
-      authority.publicKey,
-      authority.publicKey,
+    // Initialize mint with temporary authority
+    const initMintInstruction = createInitializeMintInstruction(
+      mint.publicKey,
+      9, // decimals
+      authority.publicKey, // Temporary mint authority
+      null, // No freeze authority from the start
     );
 
-    this.logger.debug('Init Mint Token instruction created');
+    this.logger.debug('Init Mint instruction created');
 
-    //MintTokenInstructions
-
-    //Create Associated Token Account Instruction
+    // Create Associated Token Account
     const ata = await getAssociatedTokenAddress(
       mintSigner.publicKey,
       authority.publicKey,
@@ -199,29 +197,40 @@ export class AdminCreateMintTokenService {
 
     this.logger.debug('Create associated token account instruction created');
 
-    const num =
+    // Mint tokens instruction
+    const mintAmount =
       BigInt(createAndMintTokenRequest.mintAmount) * BigInt(1_000_000_000);
-
-    const mintTokens = createMintToCheckedInstruction(
-      mintSigner.publicKey, // mint
-      ata, // receiver (should be a token account)
-      mintAuthoritySigner.publicKey, // mint authority
-      num, // amount. if your decimals is 8, you mint 10^8 for 1 token.
-      9, // decimals
+    const mintTokensInstruction = createMintToInstruction(
+      mint.publicKey,
+      ata,
+      authority.publicKey,
+      mintAmount,
     );
 
-    this.logger.debug('Mint token instruction created');
+    this.logger.debug('Mint tokens instruction created');
 
+    // Create instruction to remove mint authority
+    const removeMintAuthorityInstruction = createSetAuthorityInstruction(
+      mint.publicKey,
+      authority.publicKey,
+      AuthorityType.MintTokens,
+      null,
+    );
+
+    this.logger.debug('Remove mint authority instruction created');
+
+    // Build and send transaction
     const transaction = new Transaction().add(
       nonceAdvance,
       createTokenAccount,
-      initMintTokenAccount,
+      initMintInstruction,
       createMetadataAccountInstruction,
       createAssociatedTokenInstruction,
-      mintTokens,
+      mintTokensInstruction,
+      removeMintAuthorityInstruction,
     );
 
-    this.logger.debug('Create Mint Token transaction created');
+    this.logger.debug('Transaction created');
 
     transaction.recentBlockhash = nonceAccount.nonce;
     transaction.feePayer = backendDevWalletSigner.publicKey;
