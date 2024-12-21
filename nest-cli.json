@@ -1,10 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/solana-stack-backend/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true
+    "webpack": true,
+    "tsConfigPath": "apps/solana-stack-backend/tsconfig.app.json"
   },
   "projects": {
     "encryption": {
@@ -42,6 +43,80 @@
       "compilerOptions": {
         "tsConfigPath": "libs/aws/tsconfig.lib.json"
       }
+    },
+    "solana-stack-backend": {
+      "type": "application",
+      "root": "apps/solana-stack-backend",
+      "entryFile": "main",
+      "sourceRoot": "apps/solana-stack-backend/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/solana-stack-backend/tsconfig.app.json"
+      }
+    },
+    "buy": {
+      "type": "application",
+      "root": "apps/buy",
+      "entryFile": "main",
+      "sourceRoot": "apps/buy/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/buy/tsconfig.app.json"
+      }
+    },
+    "launch": {
+      "type": "application",
+      "root": "apps/launch",
+      "entryFile": "main",
+      "sourceRoot": "apps/launch/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/launch/tsconfig.app.json"
+      }
+    },
+    "swap": {
+      "type": "application",
+      "root": "apps/swap",
+      "entryFile": "main",
+      "sourceRoot": "apps/swap/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/swap/tsconfig.app.json"
+      }
+    },
+    "run": {
+      "type": "application",
+      "root": "apps/run",
+      "entryFile": "main",
+      "sourceRoot": "apps/run/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/run/tsconfig.app.json"
+      }
+    },
+    "user": {
+      "type": "application",
+      "root": "apps/user",
+      "entryFile": "main",
+      "sourceRoot": "apps/user/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user/tsconfig.app.json"
+      }
+    },
+    "mint": {
+      "type": "application",
+      "root": "apps/mint",
+      "entryFile": "main",
+      "sourceRoot": "apps/mint/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/mint/tsconfig.app.json"
+      }
+    },
+    "fees": {
+      "type": "application",
+      "root": "apps/fees",
+      "entryFile": "main",
+      "sourceRoot": "apps/fees/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/fees/tsconfig.app.json"
+      }
     }
-  }
+  },
+  "monorepo": true,
+  "root": "apps/solana-stack-backend"
 }

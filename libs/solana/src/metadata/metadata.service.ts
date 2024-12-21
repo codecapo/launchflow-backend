@@ -45,13 +45,13 @@ export class MetadataService {
   public async pinFile(
     assetType: AssetType,
     pinataMetadata: PinataMetadata,
-    asset?: Express.Multer.File,
+    asset?: Buffer,
   ) {
     const formData = new FormData();
     formData.append('pinataOptions', JSON.stringify({ cidVersion: 1 }));
 
     if (assetType === AssetType.IMAGE && asset) {
-      formData.append('file', new Blob([asset.buffer]));
+      formData.append('file', new Blob([asset]));
       formData.append('pinataMetadata', JSON.stringify(pinataMetadata));
     } else if (assetType === AssetType.METADATA) {
       //formData.append('file', new Blob([asset.buffer]));

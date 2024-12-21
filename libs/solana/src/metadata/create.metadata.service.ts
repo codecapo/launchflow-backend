@@ -5,6 +5,7 @@ import {
   MetadataService,
 } from '@app/solana/metadata/metadata.service';
 import * as crypto from 'node:crypto';
+import { MultipartFile } from '@fastify/multipart';
 
 @Injectable()
 export class CreateMetadataService {
@@ -13,7 +14,7 @@ export class CreateMetadataService {
   constructor(private readonly metadataService: MetadataService) {}
 
   public async createAndPinMetadataForSplToken(
-    image: Express.Multer.File,
+    image: MultipartFile,
     tokenName: string,
     tokenSymbol: string,
     tokenDescription: string,
@@ -30,10 +31,11 @@ export class CreateMetadataService {
       name: crypto.randomUUID().toString(),
     };
 
+    const imageBuffer = await image.toBuffer()
     const imagePin = await this.metadataService.pinFile(
       AssetType.IMAGE,
       pinImageMetadata,
-      image,
+      imageBuffer,
     );
 
     const imagePinLink = `${process.env.PINATA_BASE_URL}${imagePin.ipfsHash}`;
